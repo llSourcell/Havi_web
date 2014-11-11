@@ -8,7 +8,6 @@ var express = require('express')
   , fs = require('fs')
   , stripe = require("stripe")("sk_test_j1SBAToC0RaGv5tSdeyOplNc")
   , url = require('url');
-  require('mongo-relation');
   
   
   
@@ -22,6 +21,7 @@ var GITHUB_CLIENT_SECRET = "4d2a41fbac1f27545afde5623c54ab8bc65bbecc";
 var Schema = mongoose.Schema;
 var the_issue;
 var the_user;
+var return_to_payment_after_login = false;
 
 //3 connect to DB 
 var uristring =
@@ -37,18 +37,23 @@ mongoose.connect(uristring, function (err, res) {
 });
 
 
-//4 create user schema
+//4 create schemas
 var userSchema = new Schema({
     userID: String,
     username: String,
 	displayname: String,
 	email: String, 
-    bountiesFunded: [mongoose.Schema.ObjectId]
-
 });
+var bountySchema = new Schema({
+    amount: String,
+	owner: String,
+	repo: String,
+    issueID: String,
+    usersFunded: []
+});
+
 var PUser = mongoose.model('gitusers', userSchema);
-
-
+var PBounty = mongoose.model('bounties', bountySchema);
 
 
 //5 login. Save user to DB if new. 
@@ -169,18 +174,9 @@ else {
 
 });
 
-// create bounty schema
-var bountySchema = new Schema({
-    amount: String,
-	owner: String,
-	repo: String,
-    issueID: String
-	
-});
-var PBounty = mongoose.model('bounties', bountySchema);
 
 
-var return_to_payment_after_login = false;
+
 
 app.get('/payment', function(req, res){
 	
@@ -248,13 +244,13 @@ app.get('/payment', function(req, res){
 			  {
 			  	
 			  
-			  //6 create a bounty object
-     		    var newBounty = new PBounty ({
-      		       amount: charge.amount,
-				   owner: owner,
-      		       repo: repo,
-      		   	  issueID: issue_id
-      		   });
+			  //6 create a bounty object, save by git id 
+			   var newBounty = new PBounty;
+			   newBounty.amount = charge.amount;
+			   newBounty.owner = owner;
+			   newBounty.repo = repo;
+			   newBounty.issueID = issue_id;
+			   newBounty.usersFunded.push(the_user.id);
 			   
 			   //7 save it to the DB
 	   		   newBounty.save(function (err) {
@@ -262,39 +258,80 @@ app.get('/payment', function(req, res){
    });
 			}
 			
+			
 			//8 if the bounty does currently exist
 			else {
 				
 				//9 get its amount
 				local_amt = the_result.amount;
-				
 				//10 sum it with current amount
 				sum_amt_pre_conv = +local_amt + +charge.amount;
 				sum_amt = sum_amt_pre_conv.toString(); 
 				
 				//11 find and modify
-				var update = {amount: sum_amt};
-				var options = {new: true};
-				PBounty.findOneAndUpdate(query, update, options, function(err, person) {
-				  if (err) {
-				    console.log('got an error');
-				  }
-			  });
+				//TODO, add userID to usersfundedarray if and only if doesn't exist
+				console.log('the query is', result[0]);
 				
-			  //12 request current user object
-			  query = mongoose.model('gitusers', userSchema);
-			   var query = PUser.find({'userID': the_user.id});
-			    query.exec(function(err, result) {
-			      if (!err) {  
-					  var theUser = result[0];
-					  
-					  YourSchema.hasMany('ModelName', {through: 'PathName', dependent: 'delete|nullify'});
-					  //request the bounty object
-					  //add reference
-				  }
-			  });
-			  
-			 
+				//get the usersfunded array from the bounty object
+				var usersFundedTemp = result[0].usersFunded;
+				
+				
+    			  //6 create a bounty object, save by git id 
+    			   var newBounty2 = new PBounty;
+    			   newBounty2.amount = sum_amt;
+    			   newBounty2.owner = result[0].owner;
+    			   newBounty2.repo = result[0].repo;
+    			   newBounty2.issueID = result[0].issue_id;
+				
+				   console.log('what is the length', usersFundedTemp.length);
+				//iterate through the array
+				for(x = 0; x < usersFundedTemp.length; x++) {
+					
+					//if the userID is found in the array, break the loop
+					if(usersFundedTemp[x] == the_user.id) {
+	 				   console.log('break happened');
+						break }
+					
+					//if the loop is at the final element, no match has been found. Add it.
+					if(x == (usersFundedTemp.length - 1)) {
+						console.log('no match found');
+		   			   newBounty2.usersFunded.push(the_user.id);
+					}
+				}
+				
+				
+				
+				
+				
+				console.log('Hey fuck', result[0]._id);
+				console.log('Hey fuck2', result[0].id);
+				
+				
+				//TODO delete old element 
+				query.remove(function (err) {
+					if(err) {
+						console.log(err);
+					}
+				});
+
+				
+   			   //7 THEN save it to the DB
+   	   		   newBounty2.save(function (err) {
+   	   if (err) console.log ('Error on save!')
+      });
+			   
+	
+				
+				
+				
+				
+				// var update = {amount: sum_amt};
+	// 			var options = {new: true};
+	// 			PBounty.findOneAndUpdate(query, update, options, function(err, person) {
+	// 			  if (err) {
+	// 			    console.log('got an error');
+	// 			  }
+	// 		  });
 				
 			}
 		}
