@@ -131,7 +131,6 @@ var app = express()
 , http = require('http');
 
 var server = http.createServer(app);
-
 // configure Express
 app.configure(function() {
   app.set('views', __dirname + '/views');
@@ -149,6 +148,21 @@ app.configure(function() {
   app.use(express.static(__dirname + '/public'));
 });
 
+ //API for github page to display bounty
+app.get('/api/bountyamount/:repo/:owner/:issueid', function(req,res) {
+	 
+  var query = PBounty.find({'issueID': req.params.issueid, 'repo': req.params.repo, 'owner': req.params.owner});
+    query.exec(function(err, result) {	
+		
+	    console.log(req.params.issueid, req.params.repo, req.params.owner, 'fuck', query, 'fuck',result);
+     if (!err) {
+		 
+ 	  	res.send({amount:result[0].amount});
+		
+ 	 }
+
+ });
+});
 
 
 app.get('/', function(req, res){
@@ -237,6 +251,7 @@ app.get('/payment', function(req, res){
 		  var query = PBounty.find({'issueID': issue_id, 'repo': repo, 'owner': owner});
 	     query.exec(function(err, result) {
 	      if (!err) {
+			  console.log(issue_id, repo, owner,'fuck', query,'fuck', result);
 			  var the_result = result[0];
 			  
 		      //5 if the bounty doesn't exist in the DB
@@ -271,67 +286,21 @@ app.get('/payment', function(req, res){
 				//11 find and modify
 				//TODO, add userID to usersfundedarray if and only if doesn't exist
 				console.log('the query is', result[0]);
-				
-				//get the usersfunded array from the bounty object
-				var usersFundedTemp = result[0].usersFunded;
-				
-				
-    			  //6 create a bounty object, save by git id 
-    			   var newBounty2 = new PBounty;
-    			   newBounty2.amount = sum_amt;
-    			   newBounty2.owner = result[0].owner;
-    			   newBounty2.repo = result[0].repo;
-    			   newBounty2.issueID = result[0].issue_id;
-				
-				   console.log('what is the length', usersFundedTemp.length);
-				//iterate through the array
-				for(x = 0; x < usersFundedTemp.length; x++) {
-					
-					//if the userID is found in the array, break the loop
-					if(usersFundedTemp[x] == the_user.id) {
-	 				   console.log('break happened');
-						break }
-					
-					//if the loop is at the final element, no match has been found. Add it.
-					if(x == (usersFundedTemp.length - 1)) {
-						console.log('no match found');
-		   			   newBounty2.usersFunded.push(the_user.id);
-					}
-				}
-				
-				
-				
-				
-				
-				console.log('Hey fuck', result[0]._id);
-				console.log('Hey fuck2', result[0].id);
-				
-				
-				//TODO delete old element 
-				query.remove(function (err) {
-					if(err) {
-						console.log(err);
-					}
-				});
 
-				
-   			   //7 THEN save it to the DB
-   	   		   newBounty2.save(function (err) {
-   	   if (err) console.log ('Error on save!')
-      });
-			   
-	
-				
-				
-				
-				
-				// var update = {amount: sum_amt};
-	// 			var options = {new: true};
-	// 			PBounty.findOneAndUpdate(query, update, options, function(err, person) {
-	// 			  if (err) {
-	// 			    console.log('got an error');
-	// 			  }
-	// 		  });
+				//12 if the user hasn't funded the bounty before, add his id to the array
+				if(result[0].usersFunded.indexOf(the_user.id) == -1)
+				{
+				    result[0].usersFunded.push(the_user.id);
+				}
+				//13 add the new amount
+				result[0].amount = sum_amt;
+ 				    
+				//14 save it
+				result[0].save(function (err) {
+				        if(err) {
+				            console.log('ERROR', err);
+				        }
+				    });
 				
 			}
 		}
@@ -356,8 +325,9 @@ app.get('/payment', function(req, res){
 
 
 
+
 // GET /auth/github
-//   Use passport.authenticate() as route middleware to authenticate the
+//   Use passport.authenticate() as route m function(req,res)iddleware to authenticate the
 //   request.  The first step in GitHub authentication will involve redirecting
 //   the user to github.com.  After authorization, GitHubwill redirect the user
 //   back to this application at /auth/github/callback
@@ -383,6 +353,7 @@ app.get('/auth/github/callback',
 	  }
 	  else {
 	      res.redirect('/account');
+		  
 	  }
   });
 
