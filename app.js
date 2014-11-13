@@ -22,6 +22,8 @@ var Schema = mongoose.Schema;
 var the_issue;
 var the_user;
 var return_to_payment_after_login = false;
+var return_to_claim_after_login = false;
+
 
 //3 connect to DB 
 var uristring =
@@ -108,7 +110,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new GitHubStrategy({
     clientID: GITHUB_CLIENT_ID,
     clientSecret: GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/auth/github/callback"
+    callbackURL: "https://localhost:5000/auth/github/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     // asynchronous verification, for effect...
@@ -128,14 +130,45 @@ passport.use(new GitHubStrategy({
 
 
 var app = express()
-, http = require('http');
+, https = require('https');
 
-var server = http.createServer(app);
+
+var options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
+
+
+//var server = https.createServer(app);
+var port = Number(process.env.PORT || 5000);
+var server = https.createServer(options, app, function(req, res) {
+	
+}).listen(port, function () {
+	console.log("Listening on " + port);
+});
 // configure Express
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(express.logger());
+  app.use(function (req, res, next) {
+
+      // Website you wish to allow to connect
+	  res.setHeader( "Access-Control-Allow-Origin", req.headers.origin );
+
+      // Request methods you wish to allow
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+      // Request headers you wish to allow
+      res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+      // Set to true if you need the website to include cookies in the requests sent
+      // to the API (e.g. in case you use sessions)
+      res.setHeader('Access-Control-Allow-Credentials', true);
+
+      // Pass to next layer of middleware
+      next();
+  });
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
@@ -190,8 +223,36 @@ else {
 
 
 
+//for claiming a bounty
+app.get('/claim', function(req, res){
+	
+	//if the user has logged in, just show the claims page 
+	if (req.user) {
+		console.log('the issue 1 ', req.query.issue);
+	    res.render('claim', { user: req.user });
+		if(req.query.issue)
+		{
+		    the_issue = req.query.issue;
+			
+		}
+		return_to_claim_after_login = false;
+		the_user = req.user;
+		
+	
+	}
+	else {
+		res.redirect('/login');
+		console.log('the issue 2 ', req.query.issue);
+	    the_issue = req.query.issue;
+		return_to_claim_after_login = true;
+	}
+	
+	
+
+});
 
 
+//for funding a bounty
 app.get('/payment', function(req, res){
 	
 	//if the user has logged in, just show the payment page 
@@ -351,6 +412,12 @@ app.get('/auth/github/callback',
 		  return_to_payment_after_login = false;
 	  	
 	  }
+	  if(return_to_claim_after_login == true) {
+	      res.redirect('/claim');
+		  return_to_claim_after_login = false;
+	  }
+	  
+	  
 	  else {
 	      res.redirect('/account');
 		  
@@ -363,10 +430,10 @@ app.get('/logout', function(req, res){
 });
 
 
-var port = Number(process.env.PORT || 5000);
-app.listen(port, function() {
-  console.log("Listening on " + port);
-});
+// var port = Number(process.env.PORT || 5000);
+// app.listen(port, function() {
+//   console.log("Listening on " + port);
+// });
 
 
 // Simple route middleware to ensure user is authenticated.

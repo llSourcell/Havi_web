@@ -1,0 +1,92 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install', 'https' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.32
+4 warn package.json passport-github-examples-login@0.0.0 No description
+5 warn package.json passport-github-examples-login@0.0.0 No repository field.
+6 warn package.json passport-github-examples-login@0.0.0 No README data
+7 warn package.json http@0.0.0 http is also the name of a node core module.
+8 warn package.json http@0.0.0 No description
+9 warn package.json http@0.0.0 No repository field.
+10 warn package.json http@0.0.0 No README data
+11 warn package.json logger@0.0.1 No repository field.
+12 verbose readDependencies using package.json deps
+13 verbose cache add [ 'https', null ]
+14 verbose cache add name=undefined spec="https" args=["https",null]
+15 verbose parsed url { protocol: null,
+15 verbose parsed url   slashes: null,
+15 verbose parsed url   auth: null,
+15 verbose parsed url   host: null,
+15 verbose parsed url   port: null,
+15 verbose parsed url   hostname: null,
+15 verbose parsed url   hash: null,
+15 verbose parsed url   search: null,
+15 verbose parsed url   query: null,
+15 verbose parsed url   pathname: 'https',
+15 verbose parsed url   path: 'https',
+15 verbose parsed url   href: 'https' }
+16 silly lockFile c3437dbc-https https
+17 verbose lock https /Users/jravel/.npm/c3437dbc-https.lock
+18 silly lockFile c3437dbc-https https
+19 silly lockFile c3437dbc-https https
+20 verbose addNamed [ 'https', '' ]
+21 verbose addNamed [ null, '*' ]
+22 silly lockFile 421d451a-https https@
+23 verbose lock https@ /Users/jravel/.npm/421d451a-https.lock
+24 silly addNameRange { name: 'https', range: '*', hasData: false }
+25 verbose request where is /https
+26 verbose request registry https://registry.npmjs.org/
+27 verbose request id c1021f10fc874163
+28 verbose url raw /https
+29 verbose url resolving [ 'https://registry.npmjs.org/', './https' ]
+30 verbose url resolved https://registry.npmjs.org/https
+31 verbose request where is https://registry.npmjs.org/https
+32 info trying registry request attempt 1 at 12:49:40
+33 http GET https://registry.npmjs.org/https
+34 http 404 https://registry.npmjs.org/https
+35 verbose headers { date: 'Wed, 12 Nov 2014 20:49:40 GMT',
+35 verbose headers   server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+35 verbose headers   'content-type': 'application/json',
+35 verbose headers   'cache-control': 'max-age=0',
+35 verbose headers   'content-length': '52',
+35 verbose headers   'accept-ranges': 'bytes',
+35 verbose headers   via: '1.1 varnish',
+35 verbose headers   age: '0',
+35 verbose headers   'x-served-by': 'cache-lax1428-LAX',
+35 verbose headers   'x-cache': 'MISS',
+35 verbose headers   'x-cache-hits': '0',
+35 verbose headers   'x-timer': 'S1415825380.566295,VS0,VE41',
+35 verbose headers   'keep-alive': 'timeout=10, max=50',
+35 verbose headers   connection: 'Keep-Alive' }
+36 silly registry.get cb [ 404,
+36 silly registry.get   { date: 'Wed, 12 Nov 2014 20:49:40 GMT',
+36 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+36 silly registry.get     'content-type': 'application/json',
+36 silly registry.get     'cache-control': 'max-age=0',
+36 silly registry.get     'content-length': '52',
+36 silly registry.get     'accept-ranges': 'bytes',
+36 silly registry.get     via: '1.1 varnish',
+36 silly registry.get     age: '0',
+36 silly registry.get     'x-served-by': 'cache-lax1428-LAX',
+36 silly registry.get     'x-cache': 'MISS',
+36 silly registry.get     'x-cache-hits': '0',
+36 silly registry.get     'x-timer': 'S1415825380.566295,VS0,VE41',
+36 silly registry.get     'keep-alive': 'timeout=10, max=50',
+36 silly registry.get     connection: 'Keep-Alive' } ]
+37 silly lockFile 421d451a-https https@
+38 silly lockFile 421d451a-https https@
+39 error 404 404 Not Found: https
+39 error 404
+39 error 404 'https' is not in the npm registry.
+39 error 404 You should bug the author to publish it
+39 error 404 It was specified as a dependency of 'passport-github-examples-login'
+39 error 404
+39 error 404 Note that you can also install from a
+39 error 404 tarball, folder, or http url, or git url.
+40 error System Darwin 14.0.0
+41 error command "node" "/usr/local/bin/npm" "install" "https"
+42 error cwd /Users/jravel/Downloads/passport-github-master 3/examples/login
+43 error node -v v0.10.32
+44 error npm -v 1.4.28
+45 error code E404
+46 verbose exit [ 1, true ]
