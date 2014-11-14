@@ -7,7 +7,10 @@ var express = require('express')
   , mongoose = require ("mongoose")
   , fs = require('fs')
   , stripe = require("stripe")("sk_test_j1SBAToC0RaGv5tSdeyOplNc")
-  , url = require('url');
+  , url = require('url')
+  , StripeStrategy = require('passport-stripe').Strategy
+  , schedule = require('node-schedule');
+  
   
   
   
@@ -15,6 +18,8 @@ var express = require('express')
 //2 set static vars
 var GITHUB_CLIENT_ID = "04db9cc90b1ada33138d"
 var GITHUB_CLIENT_SECRET = "4d2a41fbac1f27545afde5623c54ab8bc65bbecc";
+var STRIPE_ID = 'ca_58TO3wfFMfPQNQiWd2mali9gTqyCFyMj';
+var STRIPE_SECRET = 'sk_test_j1SBAToC0RaGv5tSdeyOplNc';
 
 
 //re-used vars
@@ -45,13 +50,15 @@ var userSchema = new Schema({
     username: String,
 	displayname: String,
 	email: String, 
+	stripeID: String,
 });
 var bountySchema = new Schema({
     amount: String,
 	owner: String,
 	repo: String,
     issueID: String,
-    usersFunded: []
+    usersFunded: [],
+	usersClaimed: []
 });
 
 var PUser = mongoose.model('gitusers', userSchema);
@@ -62,6 +69,9 @@ var PBounty = mongoose.model('bounties', bountySchema);
 passport.serializeUser(function(user, done) {
   done(null, user);
   
+  //if no stripe data, just work with github
+  if(user.stripe_user_id == null) {
+  console.log('fuck', user.stripe_user_id);
   query = mongoose.model('gitusers', userSchema);
   
   //1 query the database for the user.ID
@@ -76,9 +86,9 @@ passport.serializeUser(function(user, done) {
    		   console.log("HES NOT IN THE DATABASE!!!");
    		   //3 save it to the DB
    		   var newUser = new PUser ({
-   		       userID: user.id,
+   		         userID: user.id,
    		       username: user.username,
-   		   	  displayname: user.displayname,
+   		   	displayname: user.displayname,
    		    	  email: user.emails[0].value
    		   });
    		   newUser.save(function (err) {
@@ -87,6 +97,81 @@ passport.serializeUser(function(user, done) {
       
   }
     }); 
+	
+}
+//if stripe data exists
+else {
+	//1 add the user's stripe ID to the database
+	//find the user in the db
+	console.log('can we get much higher', the_user);
+    var query = PUser.find({'userID': the_user.id});
+	//update the stripeID field with this 
+	var update = {stripeID: user.stripe_user_id};
+	var options = {new: true};
+	//update the user's stripe ID and save to the DB 
+	PUser.findOneAndUpdate(query, update, options, function(err, person) {
+	  if (err) {
+	    console.log('got an error');
+	  }
+	});
+	
+	//2 add the users gitID to the usersClaimed array in the bounty object 
+	console.log('you got the issue again', the_issue);
+  ///get bounty from the DB
+  var split = the_issue.split('/');
+  var owner = split[1];
+  var repo = split[2];
+  var issue_id = split[4];
+  var query = PBounty.find({'issueID': issue_id, 'repo': repo, 'owner': owner});
+   query.exec(function(err, result) {
+    if (!err) {
+		
+		//if the user hasn't claimed the bounty before, add his id to the array
+		if(result[0].usersClaimed.indexOf(the_user.id) == -1)
+		{
+		    result[0].usersClaimed.push(the_user.id);
+		}
+		//save it
+		result[0].save(function (err) {
+		        if(err) {
+		            console.log('ERROR', err);
+		        }
+		    });
+		
+	}
+});
+	
+//3 schedule stripe payment to the account in 1 week
+//get date one week from now
+var payDate = new Date();
+payDate.setDate(payDate.getDate()+7);
+//schedule payment on that date
+//var j = schedule.scheduleJob(payDate, function(){
+	//TODO get name, card token, and email 
+	// Create a Recipient
+	stripe.recipients.create({
+	  name: "John Doe",
+	  type: "individual",
+	  card: token_id,
+	  email: "payee@example.com"
+	}, function(err, recipient) {
+	  // recipient;
+	});
+    //send money
+	stripe.transfers.create({
+	  amount: 10,
+	  currency: "usd",
+	  recipient: "self",
+	  description: "Transfer for test@example.com"
+	}, function(err, transfer) {
+		console.log('err', err);
+		console.log('transfer', transfer);
+	  // asynchronously called
+	});
+	
+	//});
+	
+}
   
 });
 
@@ -124,6 +209,21 @@ passport.use(new GitHubStrategy({
     });
   }
 ));
+
+
+//stripe strategy
+passport.use(new StripeStrategy({
+        clientID: STRIPE_ID,
+        clientSecret: STRIPE_SECRET,
+        callbackURL: "https://localhost:5000/auth/stripe/callback"
+      },
+      function(accessToken, refreshToken, stripe_properties, done) {
+      //  User.findOrCreate({ stripeId: stripe_properties.stripe_user_id }, function (err, user) {
+           return done(null, stripe_properties);
+		  console.log(accessToken, refreshToken, stripe_properties, done);
+       // });
+      }
+    ));
 
 
 
@@ -423,6 +523,28 @@ app.get('/auth/github/callback',
 		  
 	  }
   });
+  
+  
+//stripe callbacks  
+app.get('/auth/stripe',
+   passport.authenticate('stripe'));
+
+app.get('/auth/stripe/callback',
+    passport.authenticate('stripe', { failureRedirect: '/claim' }),
+    function(req, res) {
+      // Successful authentication, redirect home.
+	  //TODO redirect to stripeaccount
+	  console.log('stripe data', res);
+	  console.log('FUCK FUCK FUCK FUCK FUCK FUCK ', req.body.stripeToken);
+      res.redirect('/stripeaccount');
+});
+	
+
+app.get('/stripeaccount', ensureAuthenticated, function(req, res){
+  res.render('stripeaccount', { user: req.user });
+});
+	
+	
 
 app.get('/logout', function(req, res){
   req.logout();
