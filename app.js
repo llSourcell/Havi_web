@@ -8,10 +8,12 @@ var express = require('express')
   , fs = require('fs')
   , stripe = require("stripe")("sk_test_j1SBAToC0RaGv5tSdeyOplNc")
   , url = require('url')
-  , schedule = require('node-schedule')
   , nodemailer = require('nodemailer')
-  , HashTable = require('hashtable')
-  , uuid = require('node-uuid');
+  , uuid = require('node-uuid')
+  , Agenda = require("Agenda")
+  , timestamps = require('mongoose-timestamp');
+
+	
 	
   
   
@@ -28,11 +30,12 @@ var Schema = mongoose.Schema;
 var the_issue;
 var the_user;
 var bountyIDforreject;
+var scheduleIDforreject;
 var jobforReject;
-var scheduledPayments = new HashTable();
 var return_to_payment_after_login = false;
 var return_to_claim_after_login = false;
 var return_to_reject_after_login = false;
+
 
 
 
@@ -45,9 +48,15 @@ mongoose.connect(uristring, function (err, res) {
   if (err) {
  // console.log ('ERROR connecting to: ' + uristring + '. ' + err);
   } else {
-  // console.log ('Succeeded connected to: ' + uristring);
+   console.log ('Succeeded connected to: ' + uristring);   
+  
   }
 });
+
+//create agenda
+var agenda = new Agenda({db: { address: uristring}});
+
+
 
 //setup email transporter
 var transporter = nodemailer.createTransport({
@@ -75,6 +84,10 @@ var bountySchema = new Schema({
     usersFunded: [],
 	usersClaimed: []
 });
+
+userSchema.plugin(timestamps);
+bountySchema.plugin(timestamps);
+
 
 var PUser = mongoose.model('gitusers', userSchema);
 var PBounty = mongoose.model('bounties', bountySchema);
@@ -227,19 +240,93 @@ app.get('/api/bountyamount/:repo/:owner/:issueid', function(req,res) {
 });
 
 
+
+ //API for github page to display all bounties
+app.get('/api/bounties', function(req,res) {
+	 
+  var query = PBounty.find({});
+    query.exec(function(err, result) {		
+     if (!err)
+	 {
+ 	  	res.send({bounties:result});
+ 	 }
+ });
+});
+
+
 app.get('/', function(req, res){
   res.render('index', { user: req.user});
   
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  res.render('account', { user: req.user });
+	
+	console.log('the user', req.user.id);
+	
+	var objectArray = [];
+	
+	
+	//query bounties with githubuserID in claimed array
+	var query = PBounty.find({ usersClaimed: req.user.id });
+    query.exec(function(err, claimedResults) {	
+		
+		if(err) {
+			console.log('error', err);
+		}
+		else {
+			console.log('no error', claimedResults);
+			var query = PBounty.find({ usersFunded: req.user.id });
+		    query.exec(function(err, fundedResults) {	
+		
+				if(err) {
+					console.log('error', err);
+				}
+				else {
+					console.log('no error', fundedResults);
+					//all done with queries
+					//add claimed objects to array
+					for(x= 0; x < claimedResults.length; x++)
+					{
+						var issuelink = 'https://github.com/' + claimedResults[x].owner + '/' + claimedResults[x].repo + '/' + 'issues/' + claimedResults[x].issueID;
+						// var issueObject = { claimed: true, amount: claimedResults[x].amount, issueID: claimedResults[x].issueID,
+// 							repo:claimedResults[x].repo, owner:claimedResults[x].owner};
+						 var issueObject = { fundedorclaimed: 'claimed', amount: claimedResults[x].amount, issueURL: issuelink};
+						objectArray.push(issueObject);
+						
+					}
+					//add funded objects to array
+					for(x= 0; x < fundedResults.length; x++)
+					{
+						var issuelink = 'https://github.com/' + fundedResults[x].owner + '/' + fundedResults[x].repo + '/' + 'issues/' + fundedResults[x].issueID;
+						var issueObject = { fundedorclaimed: 'funded', amount: fundedResults[x].amount, issueURL: issuelink};
+						objectArray.push(issueObject);
+						
+					}
+					//push it to the front end
+					console.log('before i send it, here it is', objectArray);
+				     res.render('account', { user: req.user, issueHistory: objectArray });
+					 
+			
+				}
+			
+			});
+		}
+	
+	});
+	
+	//fill front end with 'you funded/claimed this issue for X$' + timestamp
+	
 });
 
 app.get('/login', function(req, res){
- 
+	
+	
+
+
 if (req.user) {
 	res.redirect('/account');
+	
+	
 	
 }
 else {
@@ -251,6 +338,8 @@ else {
 });
 
 app.post('/claim', function(req, res) {
+	
+	
 	var token_id = req.body.stripeToken;
 	var legal_name = req.body.legalName;
 	
@@ -279,12 +368,6 @@ app.post('/claim', function(req, res) {
 			        }
 					if(!err) {
 						console.log('successful save');
-						// //3 schedule stripe payment to the account in 1 week
-						//get date one week from now
-						var payDate = new Date();
-						//payDate.setDate(payDate.getDate()+7); 
-						//50 seconds from now for test
-						payDate.setSeconds(payDate.getSeconds() + 50);
 						console.log('the user', the_user.emails[0].value);
 						//get array of emails of users who funded the bounty
 						console.log('here is the parameter', result[0].usersFunded);
@@ -300,13 +383,12 @@ app.post('/claim', function(req, res) {
 								}
 								
 								console.log('these are the emails', tempEmails);
-								//send the emails
-		   						
-								//generate random id
-								var randomKey = uuid.v1(); 
+								//generate schedule ID 
 								
+								var scheduleID = uuid.v1();
+
 								//create email
-								var tempUrl = '"' + 'https://localhost:5000/rejectbounty' + '?jobID='+ randomKey + '&bountyID=' + result[0]._id + '"';
+								var tempUrl = '"' + 'https://localhost:5000/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
 		   						var mailOptions = {
 		   						    from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
 		   						    to: tempEmails, // list of receivers
@@ -322,43 +404,83 @@ app.post('/claim', function(req, res) {
 							   						        console.log('Message sent: ' + info.response);
 							   								//if the emails were sent
 							   								//schedule payment on that date
-							   								var job = schedule.scheduleJob(payDate, function(){
-						
-							   									// Create a Recipient
-							   									console.log('the data is', legal_name, token_id, the_user.emails[0].value);
-							   									stripe.recipients.create({
-							   									  name: legal_name,
-							   									  type: "individual",
-							   									  card: token_id,
-							   									  email: the_user.emails[0].value
-							   									}, function(err, recipient) {
-							   										if(err)  {
-							   											console.log('err creating recipient');
-							   										}
-							   									    //send transfer
-							   										stripe.transfers.create({
-							   										  amount: result[0].amount,
-							   										  currency: "usd",
-							   										  recipient: recipient.id,
-							   										  statement_description: "Transfer for test@example.com"
-							   										}, function(err, transfer) {
-							   											if(err) {
-							   											console.log('err', err);
-							   										}
-							   											console.log('transfer', transfer);
-							   										  // asynchronously called
-							   										});
-							   									});
-					   
+															
+														    //define agenda w/ name being bounty ID in DB
+															//var bountyIDstring = String(result[0]._id);
+															agenda.define(scheduleID, function(job, done) {
+																
+															
+																if(result[0].amount === '0'){ 
+																
+																  console.log("payment can't happen, no bounty")
+																}
+																else {																	
+																	
+								   									// Create a Recipient
+								   									console.log('the data is', legal_name, token_id, the_user.emails[0].value);
+								   									stripe.recipients.create({
+								   									  name: legal_name,
+								   									  type: "individual",
+								   									  card: token_id,
+								   									  email: the_user.emails[0].value
+								   									}, function(err, recipient) {
+								   										if(err)  {
+								   											console.log('err creating recipient');
+								   										}
+								   									    //send transfer
+								   										stripe.transfers.create({
+								   										  amount: result[0].amount,
+								   										  currency: "usd",
+								   										  recipient: recipient.id,
+								   										  statement_description: "Transfer for test@example.com"
+								   										}, function(err, transfer) {
+								   											if(err) {
+								   											console.log('err', err);
+								   										}
+																		
+																		//make amount = 0
+																		result[0].amount = '0';
+																		//14 save it
+																		result[0].save(function (err) {
+																		        if(err) {
+																		            console.log('ERROR', err);
+																		        }
+																				else{
+																					console.log('made amount 0');
+																				}
+																		    });
+																		
+																		//send email bounty you claimed was accepted
+																	    var githublink = 'https://github.com/';
+																	    var mailOptions = {
+																	      from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+																	      to: the_user.emails[0].value, // list of receivers
+																	      subject: 'the bounty you claimed was accepted!', // Subject line
+																	      text: 'bounty', // plaintext body
+																	      html: '<b>If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
+																	  };
+																	   						// send mail with defined transport object
+																	   					transporter.sendMail(mailOptions, function(error, info){
+																	   						    if(error){
+																	   						        console.log(error);
+																	  							}
+																	  						});
 
-							   								});
-															
-															
-															//add schedule to hashtable with a random key
-															scheduledPayments.put(randomKey, {value: job});
-															console.log('the job was not yet canceled', job);
-															job.cancel();
-															console.log('the job was canceled', job);
+																		
+																		
+								   											console.log('transfer', transfer);
+								   										  // asynchronously called
+								   										});
+								   									});
+																}
+															    done();
+																
+															});
+															//schedule agenda
+															agenda.schedule('in 50 seconds', scheduleID);
+															//start agenda
+															agenda.start();
+
 							
 							   						    }
 							   						});
@@ -383,6 +505,25 @@ app.post('/claim', function(req, res) {
 //after claim accepted
 app.get('/claimaccepted', function(req, res){
 	
+	  var split = the_issue.split('/');
+	
+    //send email 
+    var githublink = 'https://github.com/';
+    console.log('and the email', the_user.emails[0].value);
+    var mailOptions = {
+      from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+      to: the_user.emails[0].value, // list of receivers
+      subject: 'You claimed a bounty!', // Subject line
+      text: 'bounty', // plaintext body
+      html: '<b>If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
+  };
+   						// send mail with defined transport object
+   					transporter.sendMail(mailOptions, function(error, info){
+   						    if(error){
+   						        console.log(error);
+  							}
+  						});
+	
 	res.render('claimaccepted');
 });
 
@@ -391,21 +532,55 @@ app.get('/claimaccepted', function(req, res){
 //
 //for claiming a bounty
 app.get('/claim', function(req, res){
-
+	
 	//if the user has logged in, just show the claims page
 	if (req.user) {
-		//console.log('the issue 1 ', req.query.issue);
-	    res.render('claim', { user: req.user });
+
 		if(req.query.issue)
 		{
 		    the_issue = req.query.issue;
 
 		}
-		return_to_claim_after_login = false;
-		the_user = req.user;
+		
+  	  var split = the_issue.split('/');
+  	  var owner = split[1];
+  	  var repo = split[2];
+  	  var issue_id = split[4];
 
+    	  var query = PBounty.find({'issueID': issue_id, 'repo': repo, 'owner': owner});
+    	   query.exec(function(err, result) {
+    	    if (!err) {
+				
+				
+				var amt;
+				if(result[0] != null) {
+					console.log('the bounty exists')
+					amt = parseInt(result[0].amount);
+					
+					if (amt != 0) {
+					    res.render('claim', { user: req.user });
+						return_to_claim_after_login = false;
+					} 
+				
+					if (amt === 0) {
+					    res.render('zerotoclaim', { user: req.user });
+					}
+				}
+				
+				else 
+				{
+				    res.render('zerotoclaim', { user: req.user });
+				}
 
+				
+			
+				}			
+				the_user = req.user;	
+				console.log('yay this was called', the_user);
+  		});
+		
 	}
+	
 	else {
 		res.redirect('/login');
 		//console.log('the issue 2 ', req.query.issue);
@@ -426,14 +601,22 @@ app.post('/rejectbounty', function(req, res){
 	console.log('the user', the_user);
    //got the bounty data
 	console.log('got bountyid', bountyIDforreject);
+	//got the schedule ID
+	console.log('got scheduleid', scheduleIDforreject);
 
-	//cancel job
-	console.log('this is the job object', jobforReject);
-	jobforReject.cancel();
-	console.log("job was canceled");
+    //cancel agenda
+	agenda.cancel({name: scheduleIDforreject}, function(err, numRemoved) {
+		
+		if(err) {
+			console.log('canceling didnt work');
+		}
+		console.log('num removed', numRemoved);
+		console.log("job was canceled");
+	});
 	
+	console.log('the user is ', the_user);
    //email me the data
-	var allData = '<b>' + 'dispute ' + req.body.dispute + 'user  ' + the_user + 'bountyID ' + bountyIDforreject + 'jobID ' + jobIDforreject + '</b>';
+	var allData = '<b>' + 'dispute ' + req.body.dispute + 'users profile  ' + the_user.profileUrl + ' bountyID ' + bountyIDforreject + '</b>';
 	var mailOptions = {
 	    from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
 	    to: 'sirajraval1@gmail.com', // list of receivers
@@ -459,26 +642,10 @@ app.get('/rejectbounty', function(req, res){
 		return_to_reject_after_login = false;
 		the_user = req.user;
 
-		jobforReject = scheduledPayments.get(req.query.jobID);
-
-		console.log("you've arrived and the job id is here", scheduledPayments.get(req.query.jobID));
-		console.log("you've arrived and the job id is here", jobforReject);
-		
-		
-		
-		console.log(req.query);
-		console.log('bountyID:', req.query.bountyID);
-		console.log('jobID:', req.query.jobID);
-		
+		console.log('bountyID:', req.query.bountyID);		
 		bountyIDforreject = req.query.bountyID;
-		
+		scheduleIDforreject = req.query.scheduleID;
 
-		
-		
-		
-		
-		
-	
 	}
 	else {
 		res.redirect('/login');
@@ -521,10 +688,13 @@ app.get('/payment', function(req, res){
  app.post('/payment', function(req, res){
     //stripe
     console.log('posted')
+ 	var customAmount = parseInt(req.body.customamount) * 100;
+    console.log('custom amount', customAmount);
+	
 
     var stripeToken = req.body.stripeToken;
     var charge = stripe.charges.create({
-      amount: 1000, // amount in cents, again
+      amount: customAmount, // amount in cents, again
       currency: "usd",
       card: stripeToken,
       description: "payinguser@example.com"
@@ -537,12 +707,34 @@ app.get('/payment', function(req, res){
 		  //2 if the card payment works
           console.log("CARD ACCEPTED", charge);
  		  res.send('Payment Accepted');
+		  
+		  
+		  
 		  //3 create bounty object of the issue data and amount funded
 		  var split = the_issue.split('/');
 		  var owner = split[1];
 		  var repo = split[2];
 		  var issue_id = split[4];
 		  var amt = charge.amount;
+		  
+		  
+		  //send email 
+		  var githublink = 'https://github.com/';
+		  console.log('and the email', the_user.emails[0].value);
+   		  var mailOptions = {
+		    from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+		    to: the_user.emails[0].value, // list of receivers
+		    subject: 'You funded a bounty!', // Subject line
+		    text: 'bounty', // plaintext body
+		    html: '<b>If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
+		};
+	   						// send mail with defined transport object
+	   					transporter.sendMail(mailOptions, function(error, info){
+	   						    if(error){
+	   						        console.log(error);
+									}
+								});
+
 		  
 		  ///4 check if bounty exist in DB
 		  var query = PBounty.find({'issueID': issue_id, 'repo': repo, 'owner': owner});
@@ -580,9 +772,7 @@ app.get('/payment', function(req, res){
 				sum_amt_pre_conv = +local_amt + +charge.amount;
 				sum_amt = sum_amt_pre_conv.toString(); 
 				
-				//11 find and modify
-				//TODO, add userID to usersfundedarray if and only if doesn't exist
-			//	console.log('the query is', result[0]);
+
 
 				//12 if the user hasn't funded the bounty before, add his id to the array
 				if(result[0].usersFunded.indexOf(the_user.id) == -1)
@@ -643,25 +833,30 @@ app.get('/auth/github',
 app.get('/auth/github/callback', 
   passport.authenticate('github', { failureRedirect: '/login' }),
   function(req, res) {
-	  if(return_to_payment_after_login == true) {
+	  
+	  
+     if(!return_to_reject_after_login && !return_to_claim_after_login && !return_to_payment_after_login) {		 
+		 res.redirect('/account');
+	 }
+	 
+	  
+	  if(return_to_payment_after_login === true) {
 	      res.redirect('/payment');
 		  return_to_payment_after_login = false;
 	  	
 	  }
-	  if(return_to_claim_after_login == true) {
-  	      res.redirect('/claim');
-  		  return_to_claim_after_login = false;
-  	  }
-	  
-	  if(return_to_reject_after_login == true) {
-  	      res.redirect('/rejectbounty');
-  		  return_to_reject_after_login = false;
-  	  }
-	  
-	  else {
-	      res.redirect('/account');
+	  if(return_to_claim_after_login === true) {
 		  
-	  }
+	    	      res.redirect('/claim');
+	    		  return_to_claim_after_login = false;
+	    	  }
+
+	  if(return_to_reject_after_login === true) {
+		  
+	    	      res.redirect('/rejectbounty');
+	    		  return_to_reject_after_login = false;
+	    	  }
+
   });
 
 

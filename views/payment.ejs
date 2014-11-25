@@ -1,10 +1,19 @@
-<form action="" method="POST">
-  <script
-    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-    data-key="pk_test_ODW7OJfVhlRJEgFY0ppWzwEE"
-    data-amount="1000"
-    data-name="Demo Site"
-    data-description="Bounty"
-    data-image="/128x128.png">
-  </script>
+<form action="/payment" method="POST">
+    custom amount: <input type="text" name="customamount"><br>
+	
+
+    <input type="submit" value="Submit">
+	<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <script
+      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+      data-key="pk_test_ODW7OJfVhlRJEgFY0ppWzwEE"
+      data-amount=""
+      data-name="Demo Site"
+      data-description="Bounty"
+      data-image="/128x128.png">
+    </script>
 </form>
+
+
+
+
