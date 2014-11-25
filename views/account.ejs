@@ -24,7 +24,7 @@ function insertTable()
 		var test = <%-JSON.stringify(issueHistory) %>;
         tbody += "<tr>";
             tbody += "<td>";
-            tbody += 'You ' + test[i].fundedorclaimed + ' ' + test[i].issueURL + ' for ' + test[i].amount/100 + ' dollars';
+            tbody += 'You ' + test[i].claimedorfunded + ' ' + test[i].issueLink + ' for ' + test[i].amount/100 + ' dollars' + ' on ' + test[i].time;
             tbody += "</td>";
         tbody += "</tr><br />";
     }
@@ -62,4 +62,3 @@ function insertTable()
 <p>Username: <%= user.username %></p>
 <p>Name: <%= user.displayName %></p>
 <p>Email: <%= user.emails[0].value %></p>
-<p>haha: <%= issueHistory[0].amount %></p>

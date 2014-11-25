@@ -85,12 +85,22 @@ var bountySchema = new Schema({
 	usersClaimed: []
 });
 
+var historySchema = new Schema({
+	userID: String,
+	amount: String,
+	claimedorfunded: String,
+	issueLink: String,
+	time: Date	
+});
+
 userSchema.plugin(timestamps);
 bountySchema.plugin(timestamps);
 
 
 var PUser = mongoose.model('gitusers', userSchema);
 var PBounty = mongoose.model('bounties', bountySchema);
+var PHistory = mongoose.model('history', historySchema);
+
 
 
 //5 login. Save user to DB if new. 
@@ -265,55 +275,63 @@ app.get('/account', ensureAuthenticated, function(req, res){
 	
 	var objectArray = [];
 	
-	
-	//query bounties with githubuserID in claimed array
-	var query = PBounty.find({ usersClaimed: req.user.id });
-    query.exec(function(err, claimedResults) {	
+	var query = PHistory.find({ userID: req.user.id });
+    query.exec(function(err, allResults) {	
+		console.log('the resultssss', allResults);
+     res.render('account', { user: req.user, issueHistory: allResults });
 		
-		if(err) {
-			console.log('error', err);
-		}
-		else {
-			console.log('no error', claimedResults);
-			var query = PBounty.find({ usersFunded: req.user.id });
-		    query.exec(function(err, fundedResults) {	
 		
-				if(err) {
-					console.log('error', err);
-				}
-				else {
-					console.log('no error', fundedResults);
-					//all done with queries
-					//add claimed objects to array
-					for(x= 0; x < claimedResults.length; x++)
-					{
-						var issuelink = 'https://github.com/' + claimedResults[x].owner + '/' + claimedResults[x].repo + '/' + 'issues/' + claimedResults[x].issueID;
-						// var issueObject = { claimed: true, amount: claimedResults[x].amount, issueID: claimedResults[x].issueID,
-// 							repo:claimedResults[x].repo, owner:claimedResults[x].owner};
-						 var issueObject = { fundedorclaimed: 'claimed', amount: claimedResults[x].amount, issueURL: issuelink};
-						objectArray.push(issueObject);
-						
-					}
-					//add funded objects to array
-					for(x= 0; x < fundedResults.length; x++)
-					{
-						var issuelink = 'https://github.com/' + fundedResults[x].owner + '/' + fundedResults[x].repo + '/' + 'issues/' + fundedResults[x].issueID;
-						var issueObject = { fundedorclaimed: 'funded', amount: fundedResults[x].amount, issueURL: issuelink};
-						objectArray.push(issueObject);
-						
-					}
-					//push it to the front end
-					console.log('before i send it, here it is', objectArray);
-				     res.render('account', { user: req.user, issueHistory: objectArray });
-					 
-			
-				}
-			
-			});
-		}
-	
 	});
 	
+	
+	//query bounties with githubuserID in claimed array
+// 	var query = PBounty.find({ usersClaimed: req.user.id });
+//     query.exec(function(err, claimedResults) {
+//
+// 		if(err) {
+// 			console.log('error', err);
+// 		}
+// 		else {
+// 			console.log('no error', claimedResults);
+// 			var query = PBounty.find({ usersFunded: req.user.id });
+// 		    query.exec(function(err, fundedResults) {
+//
+// 				if(err) {
+// 					console.log('error', err);
+// 				}
+// 				else {
+// 					console.log('no error', fundedResults);
+// 					//all done with queries
+// 					//add claimed objects to array
+// 					for(x= 0; x < claimedResults.length; x++)
+// 					{
+// 						var issuelink = 'https://github.com/' + claimedResults[x].owner + '/' + claimedResults[x].repo + '/' + 'issues/' + claimedResults[x].issueID;
+// 						// var issueObject = { claimed: true, amount: claimedResults[x].amount, issueID: claimedResults[x].issueID,
+// // 							repo:claimedResults[x].repo, owner:claimedResults[x].owner};
+// 						 var issueObject = { fundedorclaimed: 'claimed', amount: claimedResults[x].amount, issueURL: issuelink};
+// 						objectArray.push(issueObject);
+//
+// 					}
+// 					//add funded objects to array
+// 					for(x= 0; x < fundedResults.length; x++)
+// 					{
+// 						var issuelink = 'https://github.com/' + fundedResults[x].owner + '/' + fundedResults[x].repo + '/' + 'issues/' + fundedResults[x].issueID;
+// 						var issueObject = { fundedorclaimed: 'funded', amount: fundedResults[x].amount, issueURL: issuelink};
+// 						objectArray.push(issueObject);
+//
+// 					}
+// 					//push it to the front end
+// 					console.log('before i send it, here it is', objectArray);
+// 				     res.render('account', { user: req.user, issueHistory: objectArray });
+//
+//
+// 				}
+//
+// 			});
+	// 	}
+	//
+	// });
+	//
 	//fill front end with 'you funded/claimed this issue for X$' + timestamp
 	
 });
@@ -405,6 +423,22 @@ app.post('/claim', function(req, res) {
 							   								//if the emails were sent
 							   								//schedule payment on that date
 															
+															
+															//add the claim to history
+											 			   var newHistory = new PHistory;
+											 			   newHistory.userID = the_user.id;
+											 			   newHistory.amount = result[0].amount;
+														   newHistory.claimedorfunded = 'claimed';
+														   newHistory.issueLink = 'https://github.com/' + owner + '/' + repo + '/' + 'issues/' + issue_id;
+			   										       newHistory.time = new Date();
+											 			   //7 save it to the DB
+											 	   		   newHistory.save(function (err) {
+											 	   if (err) {
+													   console.log ('Error on save!');
+												   }
+											   
+															
+															
 														    //define agenda w/ name being bounty ID in DB
 															//var bountyIDstring = String(result[0]._id);
 															agenda.define(scheduleID, function(job, done) {
@@ -480,7 +514,7 @@ app.post('/claim', function(req, res) {
 															agenda.schedule('in 50 seconds', scheduleID);
 															//start agenda
 															agenda.start();
-
+														});		
 							
 							   						    }
 							   						});
@@ -758,8 +792,27 @@ app.get('/payment', function(req, res){
 			   
 			   //7 save it to the DB
 	   		   newBounty.save(function (err) {
-	   if (err) console.log ('Error on save!')
+	   if (err) {
+		   
+		   console.log('Error on save!');
+	   }
+	   
+		//add the fund to history
+	   var newHistory = new PHistory;
+	   newHistory.userID = the_user.id;
+	   newHistory.amount = charge.amount;
+	   newHistory.claimedorfunded = 'funded';
+	   newHistory.issueLink = 'https://github.com/' + owner + '/' + repo + '/' + 'issues/' + issue_id;
+       newHistory.time = new Date();
+	   
+
+	   //7 save it to the DB
+		   newHistory.save(function (err) {
+if (err) {
+   console.log ('Error on save!');
+}
    });
+});
 			}
 			
 			
@@ -787,6 +840,22 @@ app.get('/payment', function(req, res){
 				        if(err) {
 				            console.log('ERROR', err);
 				        }
+						
+						//add the claim to history
+		 			   var newHistory = new PHistory;
+		 			   newHistory.userID = the_user.id;
+		 			   newHistory.amount = charge.amount;
+					   newHistory.claimedorfunded = 'funded';
+					   newHistory.issueLink = 'https://github.com/' + owner + '/' + repo + '/' + 'issues/' + issue_id;
+				       newHistory.time = new Date();
+					   
+
+		 			   //7 save it to the DB
+		 	   		   newHistory.save(function (err) {
+		 	     if (err) {
+				   console.log ('Error on save!');
+			   }
+		   });
 				    });
 				
 			}
