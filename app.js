@@ -35,6 +35,7 @@ var jobforReject;
 var return_to_payment_after_login = false;
 var return_to_claim_after_login = false;
 var return_to_reject_after_login = false;
+var email_user;
 
 
 
@@ -107,6 +108,9 @@ var PHistory = mongoose.model('history', historySchema);
 passport.serializeUser(function(user, done) {
   done(null, user);
   
+  console.log('passport came first');
+  //user for account custome mail submit purposes
+  email_user = user;
   //if no stripe data, just work with github
   if(user.stripe_user_id == null) {
 //  console.log('fuck', user.stripe_user_id);
@@ -282,72 +286,80 @@ app.get('/account', ensureAuthenticated, function(req, res){
 		
 		
 	});
-	
-	
-	//query bounties with githubuserID in claimed array
-// 	var query = PBounty.find({ usersClaimed: req.user.id });
-//     query.exec(function(err, claimedResults) {
-//
-// 		if(err) {
-// 			console.log('error', err);
-// 		}
-// 		else {
-// 			console.log('no error', claimedResults);
-// 			var query = PBounty.find({ usersFunded: req.user.id });
-// 		    query.exec(function(err, fundedResults) {
-//
-// 				if(err) {
-// 					console.log('error', err);
-// 				}
-// 				else {
-// 					console.log('no error', fundedResults);
-// 					//all done with queries
-// 					//add claimed objects to array
-// 					for(x= 0; x < claimedResults.length; x++)
-// 					{
-// 						var issuelink = 'https://github.com/' + claimedResults[x].owner + '/' + claimedResults[x].repo + '/' + 'issues/' + claimedResults[x].issueID;
-// 						// var issueObject = { claimed: true, amount: claimedResults[x].amount, issueID: claimedResults[x].issueID,
-// // 							repo:claimedResults[x].repo, owner:claimedResults[x].owner};
-// 						 var issueObject = { fundedorclaimed: 'claimed', amount: claimedResults[x].amount, issueURL: issuelink};
-// 						objectArray.push(issueObject);
-//
-// 					}
-// 					//add funded objects to array
-// 					for(x= 0; x < fundedResults.length; x++)
-// 					{
-// 						var issuelink = 'https://github.com/' + fundedResults[x].owner + '/' + fundedResults[x].repo + '/' + 'issues/' + fundedResults[x].issueID;
-// 						var issueObject = { fundedorclaimed: 'funded', amount: fundedResults[x].amount, issueURL: issuelink};
-// 						objectArray.push(issueObject);
-//
-// 					}
-// 					//push it to the front end
-// 					console.log('before i send it, here it is', objectArray);
-// 				     res.render('account', { user: req.user, issueHistory: objectArray });
-//
-//
-// 				}
-//
-// 			});
-	// 	}
-	//
-	// });
-	//
-	//fill front end with 'you funded/claimed this issue for X$' + timestamp
+
 	
 });
 
+app.get('/inputemail', function(req, res){
+  res.render('inputemail', { isValid: true});
+  
+});
+
+app.post('/inputemail', function(req, res){
+  
+  //get email inputted
+	var email = req.body.customemail; 
+	 
+	 //if email exists 
+	if(validateEmail(email))
+	{
+		
+	
+  var query = PUser.find({'userID': email_user.id });
+   query.exec(function(err, result) {
+    if (!err) {
+		//make email user submitted email
+		result[0].email = email;
+		//14 save it
+		result[0].save(function (err) {
+		        if(err) {
+		            console.log('ERROR', err);
+		        }
+				else{
+					console.log('made new email');
+					//then redirect to account
+					res.redirect('/account');
+				}
+		    });
+			
+		}	
+		
+	
+	});
+
+}
+else {
+	
+	res.render('inputemail', { isValid: false});
+}
+	
+  
+});
+
+function validateEmail(email) { 
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+}
+
+
 app.get('/login', function(req, res){
 	
-	
+	  console.log('at login');
 
 
 if (req.user) {
-	res.redirect('/account');
+  //TODO if user has no email, get user input then save
 	
+	
+
+		res.redirect('/account');
+
+	  console.log('user data', req.user);
 	
 	
 }
 else {
+	  console.log('hahaha3');
     res.render('login', { user: req.user });
 	
 }
@@ -892,6 +904,7 @@ app.get('/auth/github',
   function(req, res){
     // The request will be redirected to GitHub for authentication, so this
     // function will not be called.
+	  console.log('hahaha2');
   });
 
 // GET /auth/github/callback
@@ -904,9 +917,80 @@ app.get('/auth/github/callback',
   function(req, res) {
 	  
 	  
+	  console.log('authenticate came first');
+	  
+	  console.log('after attempting to login with github')
      if(!return_to_reject_after_login && !return_to_claim_after_login && !return_to_payment_after_login) {		 
-		 res.redirect('/account');
-	 }
+		 
+		 
+	     var query = PUser.find({'userID': req.user.id});
+	      query.exec(function(err, result) {
+	        if (!err) {
+				if(result[0])
+				{
+					
+				
+  				  //if he has an email, just go to account
+				if(result[0].email)
+	 			{
+	   			 console.log('email has a value ',result[0].email );
+		
+	 			 res.redirect('/account');
+	 			}
+	 	   	 else 
+			 {
+				 //if he doesn't have an email, go to account
+	     	  console.log('email has no value ',result[0].email );
+		
+	 		  res.redirect('/inputemail');
+	 		  } 
+			  
+		 	 }
+		  else {
+			  
+			  //user not in DB
+			  
+			  console.log('the user data', req.user);
+			  //create and save new user
+			  
+			  //if the user has an email on github, use it and save
+			  if(req.user.email) {
+			  	
+			  
+	        		   var newUser = new PUser ({
+	        		         userID: req.user.id,
+	        		       username: req.user.username,
+	        		   	displayname: req.user.displayname,
+	        		    	  email: req.user.email
+	        		   });
+	        		   newUser.save(function (err) {
+	        if (err) console.log ('Error on save!')});
+	     	    }
+				else {
+					
+					//the user has no email on github so redirect them to 
+				 res.redirect('/inputemail');
+				
+				}
+				
+			}
+			
+		  	
+			
+		  }
+			
+		
+			
+		});
+		
+	}
+		 
+		 
+		 
+		 
+		 
+		
+
 	 
 	  
 	  if(return_to_payment_after_login === true) {
@@ -942,5 +1026,6 @@ app.get('/logout', function(req, res){
 //   login page.
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
+
   res.redirect('/login')
 }
