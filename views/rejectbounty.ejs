@@ -1,7 +1,104 @@
-<b>Reject Bounty form. Submit your dispute and our dispute resolution team will take care of the rest.</b>
-<form action="/rejectbounty" method="POST">
-Dispute:<br>
-<input type="text" name="dispute">
+	<div id="header"  >
+	    <a href="/"><p class="alignleft"><img src="http://i.imgur.com/ZGG3QJB.png" style="width:150px;height:60px" text-align="left" top="30px"></p></a></div>
+<br><br><br><br><br><br>
 <br>
-<input type="submit" value="Send message" />
+<br>
+<br>
+<center><div id="sentence"><font color=black face="verdana">Please submit a reason for your claim rejection. We'll investigate and get back to you shortly. </font></div></center>
+<br>
+<center><textarea style="font-family:Helvetica" name="dispute" form="disputeform" placeholder="Enter dispute..." cols="70" rows="15"></textarea></center>
+
+<form action="/rejectbounty" id="disputeform" method="POST">
+<br>
+<center><input type="submit" class="thebutton" value="Submit Dispute" /></center>
 </form>
+
+
+
+<style>
+
+#sentence {
+	
+	margin-left:0px;
+}
+
+textarea {
+   font-size: 10pt;
+   -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+	     border:1px #22994D;
+	     box-shadow: 0 0 1px #22994D;
+	     border-width: 5px;
+		 border-style:solid;
+		 
+} 
+
+body {background-color:#ffffff}
+
+.thebutton {	  
+  margin-left:220px;
+  
+    overflow: visible;
+    display: inline-block;
+    padding: 0.5em 1em;
+    border: 1px solid #d4d4d4;
+    margin: 0;
+    text-decoration: none;
+    text-shadow: 1px 1px 0 #fff;
+    font: 18px/normal Helvetica;
+  font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+    cursor: pointer;
+    outline: none;
+    background-color: #ececec;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
+    background-image: -webkit-linear-gradient(#f4f4f4, #ececec);
+    background-image: -moz-linear-gradient(#f4f4f4, #ececec);
+    background-image: -o-linear-gradient(#f4f4f4, #ececec);
+    background-image: -ms-linear-gradient(#f4f4f4, #ececec);
+    background-image: linear-gradient(#f4f4f4, #ececec);
+    -moz-background-clip: padding;
+    background-clip: padding; /**/
+    /* commented out due to Opera 11.10 bug */
+    -webkit-border-radius: 0.2em;
+    -moz-border-radius: 0.2em;
+    border-radius: 0.2em; /* IE hacks */
+    zoom: 1;
+    *display: inline;
+}
+
+.thebutton:hover,
+.thebutton:focus {
+    border-color: #22994D;
+    border-bottom-color: #22994D;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    background-color: #22a301;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#22994D), to(#22994D));
+    background-image: -webkit-linear-gradient(#22994D, #22994D);
+    background-image: -moz-linear-gradient(#22994D, #22994D);
+    background-image: -o-linear-gradient(#22994D, #22994D);
+    background-image: -ms-linear-gradient(#22994D, #22994D);
+    background-image: linear-gradient(#22994D, #22994D);
+}
+
+.thebutton:active,
+.thebutton.active {
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    border-color: #3366FF;
+    border-bottom-color: #3366FF;
+    background-color: #3366FF;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3072b3), to(#599bdc));
+    background-image: -webkit-linear-gradient(#3072b3, #599bdc);
+    background-image: -moz-linear-gradient(#3072b3, #599bdc);
+    background-image: -o-linear-gradient(#3072b3, #599bdc);
+    background-image: -ms-linear-gradient(#3072b3, #599bdc);
+    background-image: linear-gradient(#3072b3, #599bdc);
+}
+
+
+</style>

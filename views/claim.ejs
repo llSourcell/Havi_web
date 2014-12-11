@@ -1,91 +1,85 @@
-<head>
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-  <title>Stripe Getting Started Form</title>
- 
-  <!-- The required Stripe lib -->
-  <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
- 
-  <!-- jQuery is used only for this example; it isn't required to use Stripe -->
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
- 
-  <script type="text/javascript">
-    // This identifies your website in the createToken call below
-    Stripe.setPublishableKey('pk_test_ODW7OJfVhlRJEgFY0ppWzwEE');
-    var stripeResponseHandler = function(status, response) {
-	console.log('yay', response);
-      var $form = $('#payment-form');
- 
-      if (response.error) {
-        // Show the errors on the form
-        $form.find('.payment-errors').text(response.error.message);
-        $form.find('button').prop('disabled', false);
-      } else {
-        // token contains id, last4, and card type
-        var token = response.id;
-        // Insert the token into the form so it gets submitted to the server
-        $form.append($('<input type="hidden" name="stripeToken" />').val(token));
-	    var input = document.getElementById("legalname").value;
-        $form.append($('<input type="hidden" name="legalName" />').val(input));
+<center>
+	<br>	<br>
+	<br>
 
-        // and re-submit
-        $form.get(0).submit();
-      }
-    };
- 
-    jQuery(function($) {
-      $('#payment-form').submit(function(e) {
-        var $form = $(this);
-		console.log('something');
- 
-        // Disable the submit button to prevent repeated clicks
-        $form.find('button').prop('disabled', true);
- 
-        Stripe.card.createToken($form, stripeResponseHandler);
- 
-        // Prevent the form from submitting with the default action
-        return false;
-      });
-    });
-  </script>
-</head>
-<body>
-  <h1>Charge $10 with Stripe</h1>
-  
-  
-  <div class="form-row">
-    <label>
-      <span>Name on Card</span>
-      <input type="text" size="20" id="legalname"/>
-    </label>
-  </div>
-  
- 
-  <form action="/claim" method="POST" id="payment-form">
-    <span class="payment-errors"></span>
- 
-    <div class="form-row">
-      <label>
-        <span>Card Number</span>
-        <input type="text" size="20" data-stripe="number"/>
-      </label>
-    </div>
- 
-    <div class="form-row">
-      <label>
-        <span>CVC</span>
-        <input type="text" size="4" data-stripe="cvc"/>
-      </label>
-    </div>
- 
-    <div class="form-row">
-      <label>
-        <span>Expiration (MM/YYYY)</span>
-        <input type="text" size="2" data-stripe="exp-month"/>
-      </label>
-      <span> / </span>
-      <input type="text" size="4" data-stripe="exp-year"/>
-    </div>
- 
-    <button type="submit">Submit Payment</button>
+<form action="/claim" method="POST" id="payment-form">
+	<p><font face="verdana" size="3">Make sure your code was merged in! You can only make a claim once.</font></p>
+    <button class="thebutton" type="submit">Claim</button>
   </form>
-</body>
+ </center>
+
+
+
+<style>
+
+  .thebutton {	  
+    margin-left:220px;
+	width:220px;
+  
+      overflow: visible;
+      display: inline-block;
+      padding: 0.5em 1em;
+      border: 1px solid #d4d4d4;
+      margin: 0;
+      text-decoration: none;
+      text-shadow: 1px 1px 0 #fff;
+      font: 20px/normal Helvetica;
+    font-weight: bold;
+      color: #333;
+      white-space: nowrap;
+      cursor: pointer;
+      outline: none;
+      background-color: #ececec;
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
+      background-image: -webkit-linear-gradient(#f4f4f4, #ececec);
+      background-image: -moz-linear-gradient(#f4f4f4, #ececec);
+      background-image: -o-linear-gradient(#f4f4f4, #ececec);
+      background-image: -ms-linear-gradient(#f4f4f4, #ececec);
+      background-image: linear-gradient(#f4f4f4, #ececec);
+      -moz-background-clip: padding;
+      background-clip: padding; /**/
+      /* commented out due to Opera 11.10 bug */
+      -webkit-border-radius: 0.2em;
+      -moz-border-radius: 0.2em;
+      border-radius: 0.2em; /* IE hacks */
+      zoom: 1;
+      *display: inline;
+  }
+  
+
+  .thebutton:hover,
+  .thebutton:focus {
+      border-color: #22994D;
+      border-bottom-color: #22994D;
+      text-decoration: none;
+      text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+      color: #fff;
+      background-color: #22994D;
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#22994D), to(#22994D));
+      background-image: -webkit-linear-gradient(#22994D, #22994D);
+      background-image: -moz-linear-gradient(#22994D, #22994D);
+      background-image: -o-linear-gradient(#22994D, #22994D);
+      background-image: -ms-linear-gradient(#22994D, #22994D);
+      background-image: linear-gradient(#22994D, #22994D);
+  }
+
+  .thebutton:active,
+  .thebutton.active {
+      text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+      color: #fff;
+      border-color: #22994D;
+      border-bottom-color: #22994D;
+      background-color: #22994D;
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3072b3), to(#599bdc));
+      background-image: -webkit-linear-gradient(#3072b3, #599bdc);
+      background-image: -moz-linear-gradient(#3072b3, #599bdc);
+      background-image: -o-linear-gradient(#3072b3, #599bdc);
+      background-image: -ms-linear-gradient(#3072b3, #599bdc);
+      background-image: linear-gradient(#3072b3, #599bdc);
+  }
+
+  
+  
+  
+  
+  </style>

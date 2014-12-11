@@ -1,19 +1,150 @@
-<form action="/payment" method="POST">
-    custom amount: <input type="text" name="customamount"><br>
+
+
+<center>
+<body>
 	
-
-    <input type="submit" value="Submit">
-	<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <script
-      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-      data-key="pk_test_ODW7OJfVhlRJEgFY0ppWzwEE"
-      data-amount=""
-      data-name="Demo Site"
-      data-description="Bounty"
-      data-image="/128x128.png">
-    </script>
+<form action="/payment" id="theform" method="POST">
+   <font face="verdana" weight="none" size="6">How much?</font></center> <center><span>$</span><input type="number" id="number" class="iz" name="customamount" min= "1" max="9999"><br>
+    <p><input type="submit" class="thebutton" id="butn" onclick='return myFunction();' value="Fund Bounty" style="margin-left: -50px;"></p>
 </form>
+</body>
+</center>
 
 
+<script>
+document.getElementById("number").onblur =function (){ 
+	if(this.value) {
+		
+	
+    this.value = parseFloat(this.value.replace(/,/g, ""))
+                    .toFixed(2)
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    
+    document.getElementById("number").value = this.value.replace(/,/g, "")
+					
+				}
+					
+				
+    
+}
 
+function validate(evt) {
+  var theEvent = evt || window.event;
+  var key = theEvent.keyCode || theEvent.which;
+  key = String.fromCharCode( key );
+  var regex = /[0-9]|\./;
+  if( !regex.test(key) ) {
+    theEvent.returnValue = false;
+    if(theEvent.preventDefault) theEvent.preventDefault();
+  }
+}
 
+function myFunction() {
+	
+    if(document.getElementById("number").value == '0.00' || !(document.getElementById("number").value) )
+ 	{
+ 		return false;
+ 	}
+	
+	
+}
+
+//
+// $('.iz').keypress(function (event) {
+//     if ((event.which != 46 || $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57)) {
+//         event.preventDefault();
+//     }
+//
+//     var text = $(this).val();
+//
+//     if ((text.indexOf('.') != -1) && (text.substring(text.indexOf('.')).length > 2)) {
+//         event.preventDefault();
+//     }
+// });
+</script>
+
+<style>
+  body {background-color:white}
+  h1   {color:black }
+  .iz {
+	   height:75px;
+	   font-size:30pt;
+	   width:175px;
+       text-align: center;
+	   padding-left: 24px;
+	   margin-left:-20px;
+	   
+  }
+  span {position: relative; left: 5px; font-size:30pt;}
+  p {
+  	
+	
+	  margin-left:50px;
+  }
+  .thebutton {	  
+	  margin-left:220px;
+	  
+      overflow: visible;
+      display: inline-block;
+      padding: 0.5em 1em;
+      border: 1px solid #d4d4d4;
+      margin: 0;
+      text-decoration: none;
+      text-shadow: 1px 1px 0 #fff;
+      font: 20px/normal Helvetica;
+	  font-weight: bold;
+      color: #333;
+      white-space: nowrap;
+      cursor: pointer;
+      outline: none;
+      background-color: #ececec;
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
+      background-image: -webkit-linear-gradient(#f4f4f4, #ececec);
+      background-image: -moz-linear-gradient(#f4f4f4, #ececec);
+      background-image: -o-linear-gradient(#f4f4f4, #ececec);
+      background-image: -ms-linear-gradient(#f4f4f4, #ececec);
+      background-image: linear-gradient(#f4f4f4, #ececec);
+      -moz-background-clip: padding;
+      background-clip: padding; /**/
+      /* commented out due to Opera 11.10 bug */
+      -webkit-border-radius: 0.2em;
+      -moz-border-radius: 0.2em;
+      border-radius: 0.2em; /* IE hacks */
+      zoom: 1;
+      *display: inline;
+  }
+  
+  .thebutton:hover,
+  .thebutton:focus {
+      border-color: #22994D;
+      border-bottom-color: #22994D;
+      text-decoration: none;
+      text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+      color: #fff;
+      background-color: #22a301;
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#22a301), to(#22a301));
+      background-image: -webkit-linear-gradient(#22994D, #22994D);
+      background-image: -moz-linear-gradient(#22994D, #22994D);
+      background-image: -o-linear-gradient(#22994D, #22994D);
+      background-image: -ms-linear-gradient(#22994D, #22994D);
+      background-image: linear-gradient(#22994D, #22994D);
+  }
+
+  .thebutton:active,
+  .thebutton.active {
+      text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+      color: #fff;
+      border-color: #22994D;
+      border-bottom-color: #22994D;
+      background-color: #22994D;
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3072b3), to(#599bdc));
+      background-image: -webkit-linear-gradient(#3072b3, #599bdc);
+      background-image: -moz-linear-gradient(#3072b3, #599bdc);
+      background-image: -o-linear-gradient(#3072b3, #599bdc);
+      background-image: -ms-linear-gradient(#3072b3, #599bdc);
+      background-image: linear-gradient(#3072b3, #599bdc);
+  }
+  
+  
+</style>

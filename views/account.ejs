@@ -1,14 +1,35 @@
+	<div id="header">
+	    <p class="alignleft">&nbsp;<img src="https://i.imgur.com/ZGG3QJB.png" style="width:60px;height:25px" text-align="left" top="30px"></p>
+<p class="alignright"><a href="https://localhost:5000/logout"  id="signout"><font face="verdana" color="#22994D" right:"10px;"> Sign Out</font></a></p>
+	</div>
 <head>
 <form name="tableForm">
 	<body onload="insertTable();">
-    <div id="wrapper"></div>
+   <div id="wrapper" align="left"></div>
 </form>
 </head>
 
+
+
+
+
+
+
+
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>  
+
+
+
+
 <script type="text/javascript">
+  
+  
+  
+  
 function insertTable()
 {
     var num_rows = <%- JSON.stringify(issueHistory.length) %>;
+	console.log(num_rows);
     var num_cols = 1;
     var width = 100;
     var theader = "<table id='table1' width = ' "+ width +"% '>";
@@ -16,27 +37,135 @@ function insertTable()
 
     for(var j = 0; j < num_cols; j++)
     {
-      theader += "<th>Recent Activity "+" </th>";
+      theader += "<th text-align='left'><font face='verdana'>Recent Activity " + " </font></th>";
     }
+
+	var monthNames = [ "January", "February", "March", "April", "May", "June",
+	    "July", "August", "September", "October", "November", "December" ];
+	
+	function ordinal_suffix_of(i) {
+	    var j = i % 10,
+	        k = i % 100;
+	    if (j == 1 && k != 11) {
+	        return i + "st";
+	    }
+	    if (j == 2 && k != 12) {
+	        return i + "nd";
+	    }
+	    if (j == 3 && k != 13) {
+	        return i + "rd";
+	    }
+		
+	    return i + "th";
+	}
+	function finalparse(i) {
+		if(i.charAt(0) == 0) {
+			
+			i.slice(1);
+		}
+
+	}
+	
+	if(num_rows == 0) {
+		
+		
+		document.getElementById('wrapper').innerHTML = '<br><br><br><br><br><br><br><br><br><br><font family="verdana" size="4" color=#22994D><center>No recent activity!</center></font>'
+	}
 
     for(var i = num_rows - 1; i >= 0; i--)
     {
-		var test = <%-JSON.stringify(issueHistory) %>;
+		
+		if(i < num_rows-10 )
+		{
+			//do nothing
+		}
+		else
+		{
+		
+        var test = <%-JSON.stringify(issueHistory) %>;
+		var string = test[i].time.split("T");
+		var date = string[0];
+		var time = string[1];
+		
+		var splitagain = date.split("-");
+		var year = splitagain[0];
+		var month = splitagain[1];
+		var day = splitagain[2]-1;
+		
+		var dayth = ordinal_suffix_of(day);
+		var final = finalparse(dayth);
+		
+
+		
         tbody += "<tr>";
             tbody += "<td>";
-            tbody += 'You ' + test[i].claimedorfunded + ' ' + test[i].issueLink + ' for ' + test[i].amount/100 + ' dollars' + ' on ' + test[i].time;
+            tbody += '<font face="verdana" size="2">' + 'You ' + test[i].claimedorfunded + ' an ' + '<a href=' + test[i].issueLink + ' target="top" id=issuelink' + '>issue</a>' + ' for ' + '$' + test[i].amount/100 + '</font>';
+			tbody += '<br><br>' + '<font color="#22a301" face="verdana" size="2">' + monthNames[parseInt(month)-1] + " " +dayth + ' ' + year + '</font>' ;
             tbody += "</td>";
-        tbody += "</tr><br />";
+        tbody += "</tr>";
+		}
     }
-    var tfooter = "</table>";
-    document.getElementById('wrapper').innerHTML = theader + tbody + tfooter;
+    var tfooter = "</table>";	
+	
+	console.log("HELLO");
+	
+    document.getElementById('wrapper').innerHTML = theader + tbody + tfooter ;
+
+	
+	
+}
+
+function timeSince(date) {
+
+    var seconds = Math.floor((new Date() - date) / 1000);
+
+    var interval = Math.floor(seconds / 31536000);
+
+    if (interval > 1) {
+        return interval + " years";
+    }
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+        return interval + " months";
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+        return interval + " days";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+        return interval + " hours";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+        return interval + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
 }
 </script>
 <style>
+
+.alignleft {
+	float: left;
+}
+.alignright {
+	float: right;
+}
+
+
+body {background-color:#ffffff;
+width:282px;
+margin-left: 0px;
+
+}
+
 #table1
 {
-    border:solid 1px;
     border-collapse:collapse;
+	background-color:#ffffff;
+	margin-left: 0px;
+	
+	
 	
 }
 
@@ -44,21 +173,76 @@ function insertTable()
 {
     border:solid 1px;
     border-collapse:collapse;
+	background-color:#ffffff;
+	margin-left: 0px;
+    border-style:ridge;
+	font-family: verdana;
+	font-size:10;
+	text-align:left;
+	border-top:#ffffff;
+	
+	
 	
 }
 
 #table1 td
 {
     border:solid 1px;
-    vertical-align:middle;
+    vertical-align:left;
+	background-color:#ffffff;
+	margin-left: 0px;
+    border-style:ridge;
 	
+	
+	
+}
+a {
+	
+	text-align:right;
+}
+#signout{
+  text-decoration: none;
+  text-decoration: none;
+  position:relative;
+  right:9px;
+  
+}
+#issuelink{
+  color:black;
+  text-decoration: none;
+  font-weight: bold;
+  
+}
+#issuelink:hover {
+  color: #22994D ;
 }
 #wrapper {
   top: 0;
 }
+body { 
+margin-top: 0px; 
+padding-top: 0px; 
+} 
+
+#wrapper {
+	
+	margin-top: 0px; 
+	padding-top: 0px; 
+	width:300px;
+	margin-left: 0px;
+	
+}
+#header {
+    background-color:#ffffff;
+    color:white;
+    padding:0px;
+	width:300px;
+	margin-left: 0px;
+	
+}
 </style>
 
-<p>ID: <%= user.id %><a href="https://localhost:5000/logout"> Logout</a></p>
-<p>Username: <%= user.username %></p>
+<!-- <p>Username: <%= user.username %></p>
 <p>Name: <%= user.displayName %></p>
-<p>Email: <%= user.emails[0].value %></p>
+<p>Email: <%= user.emails[0].value %></p> -->
+<!-- <p>ID: <%= user.id %> -->

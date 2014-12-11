@@ -35,6 +35,8 @@ var jobforReject;
 var return_to_payment_after_login = false;
 var return_to_claim_after_login = false;
 var return_to_reject_after_login = false;
+var return_to_delete_after_login = false;
+var return_to_download_after_login = false;
 var email_user;
 
 
@@ -76,6 +78,8 @@ var userSchema = new Schema({
     username: String,
 	displayname: String,
 	email: String, 
+	stripecustomerID: String,
+	striperecipientID: String
 });
 var bountySchema = new Schema({
     amount: String,
@@ -234,6 +238,21 @@ app.configure(function() {
   app.use(express.static(__dirname + '/public'));
 });
 
+app.get('/test', function(req, res){
+	console.log('called get');
+	console.log('the req',req);
+	console.log('the res', res);
+  
+});
+
+app.post('/test', function(req, res){
+	console.log('called post');
+	console.log('the req',req);
+	console.log('the res', res);
+  
+});
+
+
  //API for github page to display bounty
 app.get('/api/bountyamount/:repo/:owner/:issueid', function(req,res) {
 	 
@@ -282,8 +301,7 @@ app.get('/account', ensureAuthenticated, function(req, res){
 	var query = PHistory.find({ userID: req.user.id });
     query.exec(function(err, allResults) {	
 		console.log('the resultssss', allResults);
-     res.render('account', { user: req.user, issueHistory: allResults });
-		
+	        res.render('account', { user: req.user, issueHistory: allResults });
 		
 	});
 
@@ -347,8 +365,8 @@ app.get('/login', function(req, res){
 	  console.log('at login');
 
 
+
 if (req.user) {
-  //TODO if user has no email, get user input then save
 	
 	
 
@@ -360,6 +378,7 @@ if (req.user) {
 }
 else {
 	  console.log('hahaha3');
+	  console.log('req.user', the_user);
     res.render('login', { user: req.user });
 	
 }
@@ -420,11 +439,11 @@ app.post('/claim', function(req, res) {
 								//create email
 								var tempUrl = '"' + 'https://localhost:5000/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
 		   						var mailOptions = {
-		   						    from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+		   						    from: 'Havi Bounty System <noreply@havi.co>', // sender address
 		   						    to: tempEmails, // list of receivers
-		   						    subject: 'A bounty you funded was claimed!', // Subject line
+		   						    subject: 'A bounty you funded on Havi was claimed!', // Subject line
 		   						    text: 'bounty', // plaintext body
-		   						    html: '<b>If you would like to reject this bounty please visit this link <a href=' + tempUrl + '>Reject</a></b>' // html body
+		   						    html: '<b>A bounty your funded on Havi was claimed. If you would like to reject this bounty please visit this link: <a href=' + tempUrl + '>Reject</a></b>' // html body
 		   						};
 							   						// send mail with defined transport object
 							   					transporter.sendMail(mailOptions, function(error, info){
@@ -455,37 +474,38 @@ app.post('/claim', function(req, res) {
 															//var bountyIDstring = String(result[0]._id);
 															agenda.define(scheduleID, function(job, done) {
 																
+																
 															
 																if(result[0].amount === '0'){ 
 																
 																  console.log("payment can't happen, no bounty")
 																}
-																else {																	
+																else {	
 																	
-								   									// Create a Recipient
-								   									console.log('the data is', legal_name, token_id, the_user.emails[0].value);
-								   									stripe.recipients.create({
-								   									  name: legal_name,
-								   									  type: "individual",
-								   									  card: token_id,
-								   									  email: the_user.emails[0].value
-								   									}, function(err, recipient) {
-								   										if(err)  {
-								   											console.log('err creating recipient');
-								   										}
+																    var query = PUser.find({'userID': the_user.id});
+																     query.exec(function(err, userResult) {
+ 								   										if(err)  {
+ 								   											console.log('err creating recipient');
+ 								   										}
+																		   
+																		   var recipientID =  userResult[0].striperecipientID;
+																		   
+																		   var sending_amount = (parseInt(result[0].amount) * 0.9).toString();
 								   									    //send transfer
 								   										stripe.transfers.create({
-								   										  amount: result[0].amount,
+								   										  amount: sending_amount,
 								   										  currency: "usd",
-								   										  recipient: recipient.id,
-								   										  statement_description: "Transfer for test@example.com"
+								   										  recipient: recipientID,
+								   										  statement_description: "Transfer"
 								   										}, function(err, transfer) {
 								   											if(err) {
 								   											console.log('err', err);
 								   										}
-																		
+															//delete user id from usersclaimed if bounty claim went through
 																		//make amount = 0
 																		result[0].amount = '0';
+																		result[0].usersClaimed = [];
+																		result[0].usersFunded = [];
 																		//14 save it
 																		result[0].save(function (err) {
 																		        if(err) {
@@ -499,11 +519,11 @@ app.post('/claim', function(req, res) {
 																		//send email bounty you claimed was accepted
 																	    var githublink = 'https://github.com/';
 																	    var mailOptions = {
-																	      from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+																	      from: 'Havi Bounty System <noreply@havi.co>', // sender address
 																	      to: the_user.emails[0].value, // list of receivers
-																	      subject: 'the bounty you claimed was accepted!', // Subject line
+																	      subject: 'the bounty you claimed on Havi was accepted!', // Subject line
 																	      text: 'bounty', // plaintext body
-																	      html: '<b>If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
+																	      html: '<b>Congrats! Your bounty claim was accepted on Havi. Payment was sent to your bank account. If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
 																	  };
 																	   						// send mail with defined transport object
 																	   					transporter.sendMail(mailOptions, function(error, info){
@@ -523,7 +543,7 @@ app.post('/claim', function(req, res) {
 																
 															});
 															//schedule agenda
-															agenda.schedule('in 50 seconds', scheduleID);
+															agenda.schedule('in 10 seconds', scheduleID);
 															//start agenda
 															agenda.start();
 														});		
@@ -557,11 +577,11 @@ app.get('/claimaccepted', function(req, res){
     var githublink = 'https://github.com/';
     console.log('and the email', the_user.emails[0].value);
     var mailOptions = {
-      from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+      from: 'Havi Bounty System <noreply@havi.co>', // sender address
       to: the_user.emails[0].value, // list of receivers
-      subject: 'You claimed a bounty!', // Subject line
+      subject: 'You claimed a bounty on Havi!', // Subject line
       text: 'bounty', // plaintext body
-      html: '<b>If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
+      html: '<b>Congrats! You have successfully claimed a bounty on Havi. If none of the funders reject your claim, you will be paid in a week from now. If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
   };
    						// send mail with defined transport object
    					transporter.sendMail(mailOptions, function(error, info){
@@ -578,7 +598,7 @@ app.get('/claimaccepted', function(req, res){
 //
 //for claiming a bounty
 app.get('/claim', function(req, res){
-	
+			
 	//if the user has logged in, just show the claims page
 	if (req.user) {
 
@@ -656,7 +676,7 @@ app.post('/rejectbounty', function(req, res){
 		if(err) {
 			console.log('canceling didnt work');
 		}
-		console.log('num removed', numRemoved);
+		//console.log('num removed', numRemoved);
 		console.log("job was canceled");
 	});
 	
@@ -664,7 +684,7 @@ app.post('/rejectbounty', function(req, res){
    //email me the data
 	var allData = '<b>' + 'dispute ' + req.body.dispute + 'users profile  ' + the_user.profileUrl + ' bountyID ' + bountyIDforreject + '</b>';
 	var mailOptions = {
-	    from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
+	    from: 'Havi Bounty System ✔ <noreply@havi.co>', // sender address
 	    to: 'sirajraval1@gmail.com', // list of receivers
 	    subject: 'someone disputed a bounty', // Subject line
 	    text: 'Bounty dispute', // plaintext body
@@ -675,6 +695,27 @@ app.post('/rejectbounty', function(req, res){
 	        console.log(error);
 	    }else{
 	        console.log('Message sent: ' + info.response);
+			// //TODO delete user in bounty's userclaimed array
+// 	   	 	 var split = the_issue.split('/');
+// 	   	 	 var owner = split[1];
+// 	   	 	 var repo = split[2];
+// 	   	 	 var issue_id = split[4];
+//
+// 	     	  var query = PBounty.find({'issueID': issue_id, 'repo': repo, 'owner': owner});
+// 	     	   query.exec(function(err, result) {
+// 				   if(!err)
+// 				   {
+//
+//
+// 				if(contains(result[0].usersClaimed,req.user.id)){
+//
+// 					//if the bounty exists, see if the user has claimed it before
+//
+// 				}
+// 			}
+// 			});
+				   
+				   
 	    }
 	});
 	
@@ -700,14 +741,196 @@ app.get('/rejectbounty', function(req, res){
     
 });
 
+app.get('/collectclaimdata', function(req, res){
+   console.log('1');
+	
+	if (req.user) {
+	    console.log('2');
+		
+		if(req.query.issue)
+		{
+		    the_issue = req.query.issue;
+			
+		}
+		return_to_claim_after_login = false;
+		the_user = req.user;
+	
+	//when user clicks on add bounty this is called
+	
+	//if they don't have a customer id ask them to enter debit card
+   //1 query the database for the user.ID
+    var query = PUser.find({'userID': req.user.id});
+     query.exec(function(err, userResult) {
+       if (!err) {
+		   console.log('3');
+		   
+		   console.log('result', userResult);
+		   if(userResult[0].striperecipientID) 
+		   {
+			   console.log('yay1',userResult[0].striperecipientID );
+			   //
+		   	  var split = the_issue.split('/');
+		   	  var owner = split[1];
+		   	  var repo = split[2];
+		   	  var issue_id = split[4];
+			  
+			  console.log('split', the_issue);
+
+		     	  var query = PBounty.find({'issueID': issue_id, 'repo': repo, 'owner': owner});
+		     	   query.exec(function(err, result) {
+					   
+					  
+						   console.log('bounty not found', result[0]);
+					   
+		     	    if (!err) {
+				
+				
+		 				var amt;
+		 				if(result[0] != null) {
+		 					console.log('the bounty exists')
+		 					amt = parseInt(result[0].amount);
+					
+		 					if (amt != 0) {
+								
+								//if users id is in usersclaimed array in bounty, render zerotoclaim.
+								if(contains(result[0].usersClaimed,req.user.id)){
+			 					    res.render('zerotoclaim', { user: req.user });
+								}
+								else {
+			 					    res.render('claim', { user: req.user });
+			 						return_to_claim_after_login = false;
+								}
+		 					} 
+		 					if (amt === 0) {
+		 					    res.render('zerotoclaim', { user: req.user });
+		 					}
+							
+							
+		 				}
+						else {
+							
+							console.log('the bounty doesnt exist');
+	 					    res.render('zerotoclaim', { user: req.user });
+						}
+					}
+				});
+			   //res.render('claim', { user: req.user });
+		   }
+		   else {
+			   console.log('yay1');
+			   
+			   res.render('collectclaimdata');
+		   }
+		   
+	   }
+   });	
+   
+}
+else {
+	res.redirect('/login');
+//	console.log('the issue 2 ', req.query.issue);
+    the_issue = req.query.issue;
+	return_to_claim_after_login = true;
+}
+
+	
+	
+});
+
+app.post('/collectclaimdata', function(req, res){
+	
+	console.log('the req', req.body.stripeToken);
+	//create recipient object and save it to DB
+  	var query = PUser.find({'userID': req.user.id});
+	     query.exec(function(err, result) {
+	       if (!err) {
+			   console.log('result', result[0]);
+			   // Create a Recipient
+			   stripe.recipients.create({
+			     name: req.body.legalName,
+			     type: "individual",
+			     bank_account: req.body.stripeToken,
+			     email: req.user.email
+			   }, function(err, recipient) {
+				   console.log('error',err);
+				   if(!err) {
+					   
+	   	 			result[0].striperecipientID = recipient.id;
+	   				//14 save it
+	  			  result[0].save(function (err) {
+	   	  			if(!err) {
+						
+						console.log('success!');
+						res.render('claim');
+				   	 }
+			     // recipient;
+			   });
+		   }
+	   });
+   }
+   
+});
+	
+	
+	
+	
+
+});
+
+
+
 
 //for funding a bounty
 app.get('/payment', function(req, res){
 	
 	//if the user has logged in, just show the payment page 
+	// if (req.user) {
+	// //	console.log('the issue 1 ', req.query.issue);
+	
+  	var query = PUser.find({'userID': req.user.id});
+	     query.exec(function(err, result) {
+	       if (!err) {
+			   
+			   
+			   //if the user has registered their card before
+			   if(result[0].stripecustomerID) {
+			   	
+				//just show the payment page
+		   	    res.render('payment', { user: req.user });
+				
+			   }
+			   else
+			   {
+				   //else collect their card info
+				   res.render('collectpaymentdata');
+			   }
+			   
+		   }
+	   });
+	// 	if(req.query.issue)
+	// 	{
+	// 	    the_issue = req.query.issue;
+	//
+	// 	}
+	// 	return_to_payment_after_login = false;
+	// 	the_user = req.user;
+	//
+	//
+	// }
+	// else {
+	// 	res.redirect('/login');
+	// //	console.log('the issue 2 ', req.query.issue);
+	//     the_issue = req.query.issue;
+	// 	return_to_payment_after_login = true;
+	// }
+	//
+	
+
+});
+
+app.get('/collectpaymentdata', function(req, res){
 	if (req.user) {
-	//	console.log('the issue 1 ', req.query.issue);
-	    res.render('payment', { user: req.user });
+		
 		if(req.query.issue)
 		{
 		    the_issue = req.query.issue;
@@ -715,19 +938,160 @@ app.get('/payment', function(req, res){
 		}
 		return_to_payment_after_login = false;
 		the_user = req.user;
-		
 	
+	//when user clicks on add bounty this is called
+	
+	//if they don't have a customer id ask them to enter debit card
+   //1 query the database for the user.ID
+    var query = PUser.find({'userID': email_user.id});
+     query.exec(function(err, result) {
+       if (!err) {
+		   
+		   console.log('result', result);
+		   if(result[0].stripecustomerID) 
+		   {
+			   res.render('payment', { user: req.user });
+		   }
+		   else {
+			   res.render('collectpaymentdata');
+		   }
+		   
+	   }
+   });	
+   
+}
+else {
+	res.redirect('/login');
+//	console.log('the issue 2 ', req.query.issue);
+    the_issue = req.query.issue;
+	return_to_payment_after_login = true;
+}
+
+	
+	
+});
+
+//get customer object and save it 
+app.post('/collectpaymentdata', function(req, res){
+	
+	console.log('the req', req.body.stripeToken);
+	
+  	var query = PUser.find({'userID': req.user.id});
+	     query.exec(function(err, result) {
+	       if (!err) {
+		  //create customer object using stripe token
+
+				   stripe.customers.create({ description: 'customer creation', email:req.user.email, card: req.body.stripeToken }, function(err, customer) { 
+					   console.log('the customer is', customer);
+					   console.log('the err is', err);
+					   
+					   
+				   				//have customer as well now, save it
+				   	 			result[0].stripecustomerID = customer.id;
+
+				   				//14 save it
+				  			  result[0].save(function (err) {
+				   	  			if(err) {
+				   	          	  			console.log('ERROR', err);
+				   	   		 			}
+										else {
+											
+											console.log('saved customer data');
+										  	res.render('payment', { user: req.user });
+										}
+				   				});
+					            
+				      });
+			
+			   
+	   }
+
+	   });
+
+	
+});
+
+
+app.get('/deletedetails', function(req, res) {
+	
+	if (req.user) {
+		
+		return_to_delete_after_login = false;
+		the_user = req.user;
+		res.render('deletedetails', { user: req.user});
+		
 	}
 	else {
 		res.redirect('/login');
-	//	console.log('the issue 2 ', req.query.issue);
-	    the_issue = req.query.issue;
-		return_to_payment_after_login = true;
+		return_to_delete_after_login = true;
+		
+		
+		
+		
 	}
 	
 	
-
+	
 });
+
+app.get('/downloadhavi', function(req, res) {
+	
+	if (req.user) {
+		
+		return_to_download_after_login = false;
+		the_user = req.user;
+		res.render('downloadhavi', { user: req.user});
+		
+	}
+	else {
+		res.redirect('/login');
+		return_to_download_after_login = true;
+		
+		
+		
+		
+	}
+	
+	
+	
+});
+
+
+
+
+
+
+app.post('/deletedetails', function(req, res) {
+	
+	//1 query database 
+  	var query = PUser.find({'userID': req.user.id});
+    query.exec(function(err, result) {
+		
+		//delete payment data
+		result[0].stripecustomerID = '';
+		result[0].striperecipientID = '';
+		result[0].save(function (err) {
+		        if(err) {
+		            console.log('ERROR', err);
+		        }
+				//
+				else {
+					res.send('<div id="header"  ><a href="/"><p class="alignleft"><img src="http://i.imgur.com/ZGG3QJB.png" style="width:70px;height:30px" text-align="left" top="30px"></p></a><br><br><br><br><br><br><br><br><br><br><br><br><center><font family="verdana" size=3>Payment details deleted!</font></center>');
+					
+				}
+		
+	});
+	
+});
+	
+	//4 if no payment then res.send(' no payment data to delete');
+	
+	
+	
+});
+
+
+
 
 
 //1 process card payment
@@ -737,13 +1101,16 @@ app.get('/payment', function(req, res){
  	var customAmount = parseInt(req.body.customamount) * 100;
     console.log('custom amount', customAmount);
 	
+  	var query = PUser.find({'userID': req.user.id});
+    query.exec(function(err, result) {
+      if (!err) {
 
     var stripeToken = req.body.stripeToken;
     var charge = stripe.charges.create({
       amount: customAmount, // amount in cents, again
       currency: "usd",
-      card: stripeToken,
-      description: "payinguser@example.com"
+      customer: result[0].stripecustomerID,
+      description: "usingcustomer@example.com"
     }, function(err, charge) {
       if (err && err.type === 'StripeCardError') {
         console.log("CARD DECLINED");
@@ -752,7 +1119,7 @@ app.get('/payment', function(req, res){
       else {
 		  //2 if the card payment works
           console.log("CARD ACCEPTED", charge);
- 		  res.send('Payment Accepted');
+ 		  res.send('<br><br><br><br><br><font family="verdana" size="4"><center>Funded! Please close this window.</center></font>');
 		  
 		  
 		  
@@ -766,13 +1133,13 @@ app.get('/payment', function(req, res){
 		  
 		  //send email 
 		  var githublink = 'https://github.com/';
-		  console.log('and the email', the_user.emails[0].value);
+		  console.log('and the email', req.user.emails[0].value);
    		  var mailOptions = {
-		    from: 'Fred Foo ✔ <foo@blurdybloop.com>', // sender address
-		    to: the_user.emails[0].value, // list of receivers
+		    from: 'Havi Bounty System  <noreply@havi.co>', // sender address
+		    to: req.user.emails[0].value, // list of receivers
 		    subject: 'You funded a bounty!', // Subject line
 		    text: 'bounty', // plaintext body
-		    html: '<b>If you would like to see this bounty click here <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
+		    html: '<b>You have successfully funded a bounty on Havi. Congrats! If you would like to see this bounty click the following link: <a href=' + githublink + split[1] + '/' + split[2] + '/' + split[3] + '/' + split[4] + '>Bounty</a></b>' // html body
 		};
 	   						// send mail with defined transport object
 	   					transporter.sendMail(mailOptions, function(error, info){
@@ -840,9 +1207,9 @@ if (err) {
 
 
 				//12 if the user hasn't funded the bounty before, add his id to the array
-				if(result[0].usersFunded.indexOf(the_user.id) == -1)
+				if(result[0].usersFunded.indexOf(req.user.id) == -1)
 				{
-				    result[0].usersFunded.push(the_user.id);
+				    result[0].usersFunded.push(req.user.id);
 				}
 				//13 add the new amount
 				result[0].amount = sum_amt;
@@ -855,7 +1222,7 @@ if (err) {
 						
 						//add the claim to history
 		 			   var newHistory = new PHistory;
-		 			   newHistory.userID = the_user.id;
+		 			   newHistory.userID = req.user.id;
 		 			   newHistory.amount = charge.amount;
 					   newHistory.claimedorfunded = 'funded';
 					   newHistory.issueLink = 'https://github.com/' + owner + '/' + repo + '/' + 'issues/' + issue_id;
@@ -888,7 +1255,13 @@ if (err) {
 	   }
 		 
     });
+	
+	
+}
+});
  });
+ 
+
 
 
 
@@ -902,10 +1275,9 @@ if (err) {
 app.get('/auth/github',
   passport.authenticate('github'),
   function(req, res){
-    // The request will be redirected to GitHub for authentication, so this
-    // function will not be called.
-	  console.log('hahaha2');
+	  console.log('hahaha2dsahufdugfusdfu');
   });
+  
 
 // GET /auth/github/callback
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -916,11 +1288,10 @@ app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function(req, res) {
 	  
-	  
 	  console.log('authenticate came first');
 	  
 	  console.log('after attempting to login with github')
-     if(!return_to_reject_after_login && !return_to_claim_after_login && !return_to_payment_after_login) {		 
+     if(!return_to_reject_after_login && !return_to_claim_after_login && !return_to_payment_after_login && !return_to_delete_after_login && !return_to_download_after_login) {		 
 		 
 		 
 	     var query = PUser.find({'userID': req.user.id});
@@ -928,13 +1299,13 @@ app.get('/auth/github/callback',
 	        if (!err) {
 				if(result[0])
 				{
-					
-				
+									
+
   				  //if he has an email, just go to account
 				if(result[0].email)
 	 			{
 	   			 console.log('email has a value ',result[0].email );
-		
+				 
 	 			 res.redirect('/account');
 	 			}
 	 	   	 else 
@@ -1000,7 +1371,7 @@ app.get('/auth/github/callback',
 	  }
 	  if(return_to_claim_after_login === true) {
 		  
-	    	      res.redirect('/claim');
+	    	      res.redirect('/collectclaimdata');
 	    		  return_to_claim_after_login = false;
 	    	  }
 
@@ -1009,6 +1380,18 @@ app.get('/auth/github/callback',
 	    	      res.redirect('/rejectbounty');
 	    		  return_to_reject_after_login = false;
 	    	  }
+			  
+			  if(return_to_delete_after_login === true) {
+		  
+			    	      res.redirect('/deletedetails');
+			    		  return_to_reject_after_login = false;
+			    	  }
+					  
+					  if(return_to_download_after_login === true) {
+		  
+					    	      res.redirect('/downloadhavi');
+					    		  return_to_download_after_login = false;
+					    	  }
 
   });
 
@@ -1028,4 +1411,14 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
 
   res.redirect('/login')
+}
+
+function contains(a, obj) {
+    var i = a.length;
+    while (i--) {
+       if (a[i] === obj) {
+           return true;
+       }
+    }
+    return false;
 }

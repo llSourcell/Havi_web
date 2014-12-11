@@ -1,0 +1,210 @@
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <title>Stripe Getting Started Form</title>
+ 
+  <!-- The required Stripe lib -->
+  <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+ 
+  <!-- jQuery is used only for this example; it isn't required to use Stripe -->
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>  
+  
+  
+ 
+ 
+  <script type="text/javascript">
+    // This identifies your website in the createToken call below
+    Stripe.setPublishableKey('pk_test_ODW7OJfVhlRJEgFY0ppWzwEE');
+    var stripeResponseHandler = function(status, response) {
+	console.log('yay', response);
+      var $form = $('#payment-form');
+ 
+      if (response.error) {
+        // Show the errors on the form
+        $form.find('.payment-errors').text(response.error.message);
+        $form.find('button').prop('disabled', false);
+      } else {
+        // token contains id, last4, and card type
+        var token = response.id;
+        // Insert the token into the form so it gets submitted to the server
+        $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+	    var input = document.getElementById("legalname").value;
+        $form.append($('<input type="hidden" name="legalName" />').val(input));
+
+        // and re-submit
+        $form.get(0).submit();
+      }
+    };
+ 
+    jQuery(function($) {
+      $('#payment-form').submit(function(e) {
+        var $form = $(this);
+		console.log('something');
+ 
+        // Disable the submit button to prevent repeated clicks
+        $form.find('button').prop('disabled', true);
+ 
+        Stripe.card.createToken($form, stripeResponseHandler);
+ 
+        // Prevent the form from submitting with the default action
+        return false;
+      });
+    });
+	
+	
+	
+  </script>
+</head>
+<body>  
+  <center>
+  <div class="form-row">
+    <label>
+      <span style="font-family : verdana;">Name on Card</span>
+	  <br>
+      <input type="text" style="font-size:14px" size="20" id="legalname" class="iz"/>
+    </label>
+  </div>
+</center>
+  
+ <center>
+  <form action="/collectpaymentdata" method="POST" id="payment-form">
+    <span class="payment-errors"></span>
+ 
+    <div class="form-row">
+      <label>
+        <span style="font-family : verdana;">Card Number</span>
+		<br>
+        <input type="text" size="20" style="font-size:14px" data-stripe="number" class="iz" id="cc-number" maxlength="19"/>
+      </label>
+    </div>
+ 
+    <div class="form-row">
+      <label>
+        <span style="font-family : verdana;">CVC</span>
+		<br>
+        <input type="text" size="4" style="font-size:14px" data-stripe="cvc" class="iz2" maxlength="4"/>
+      </label>
+    </div>
+ 
+    <div class="form-row">
+      <label>
+        <span style="font-family : verdana;">Exp. (MM/YYYY)</span>
+		<br>
+        <input type="text" size="2" style="font-size:14px" data-stripe="exp-month" class="iz2" maxlength="2"/>
+      </label>
+      <span> / </span>
+      <input type="text" size="4" style="font-size:14px" data-stripe="exp-year" class="iz2" maxlength="4"/>
+    </div>
+   <br>
+    <button type="submit" class="thebutton">Submit Card Details</button>
+  </form>
+</center>
+</body>
+
+  <script type="text/javascript">
+  function space(el, after) {
+      after = after || 4;
+      var v = el.value.replace(/[^\dA-Z]/g, ''),
+          reg = new RegExp(".{" + after + "}","g")
+      el.value = v.replace(reg, function (a, b, c) {
+          return a + ' ';
+      });
+  }
+  
+  var el = document.getElementById('cc-number');
+  el.addEventListener('keyup', function () {
+      space(this, 4);
+  });
+  </script>
+
+<style>
+.iz {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	width:190px;
+	height:30px;
+	text-align:center;
+   
+}
+.iz2 {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	width:50px;
+	height:30px;
+	text-align:center;
+   
+}
+
+
+.form-row {
+	
+	top: 0px;
+}
+
+.thebutton {	  
+  margin-left:220px;
+  
+    overflow: visible;
+    display: inline-block;
+    padding: 0.5em 1em;
+    border: 1px solid #d4d4d4;
+    margin: 0;
+    text-decoration: none;
+    text-shadow: 1px 1px 0 #fff;
+    font: 20px/normal Helvetica;
+  font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+    cursor: pointer;
+    outline: none;
+    background-color: #ececec;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
+    background-image: -webkit-linear-gradient(#f4f4f4, #ececec);
+    background-image: -moz-linear-gradient(#f4f4f4, #ececec);
+    background-image: -o-linear-gradient(#f4f4f4, #ececec);
+    background-image: -ms-linear-gradient(#f4f4f4, #ececec);
+    background-image: linear-gradient(#f4f4f4, #ececec);
+    -moz-background-clip: padding;
+    background-clip: padding; /**/
+    /* commented out due to Opera 11.10 bug */
+    -webkit-border-radius: 0.2em;
+    -moz-border-radius: 0.2em;
+    border-radius: 0.2em; /* IE hacks */
+    zoom: 1;
+    *display: inline;
+}
+
+.thebutton:hover,
+.thebutton:focus {
+    border-color: #22a301;
+    border-bottom-color: #22a301;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    background-color: #22a301;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#22a301), to(#22a301));
+    background-image: -webkit-linear-gradient(#22a301, #22a301);
+    background-image: -moz-linear-gradient(#22a301, #22a301);
+    background-image: -o-linear-gradient(#22a301, #22a301);
+    background-image: -ms-linear-gradient(#22a301, #22a301);
+    background-image: linear-gradient(#22a301, #22a301);
+}
+
+.thebutton:active,
+.thebutton.active {
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    border-color: #22a301;
+    border-bottom-color: #22a301;
+    background-color: #22a301;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3072b3), to(#599bdc));
+    background-image: -webkit-linear-gradient(#3072b3, #599bdc);
+    background-image: -moz-linear-gradient(#3072b3, #599bdc);
+    background-image: -o-linear-gradient(#3072b3, #599bdc);
+    background-image: -ms-linear-gradient(#3072b3, #599bdc);
+    background-image: linear-gradient(#3072b3, #599bdc);
+}
+
+
+</style>

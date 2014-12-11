@@ -1,26 +1,26 @@
-<br><br><br><br><br><br><center><form action="/inputemail" method="POST">
-    <font face = "verdana" color="#22994D">Please enter a valid email</font><br> <br><input type="text" id="textbox" name="customemail"><br>
-   <br> <input type="submit" class="thebutton" value="Submit Email">
-</form></center>
+	<div id="header"  >
+	    <a href="/"><p class="alignleft"><img src="http://i.imgur.com/ZGG3QJB.png" style="width:150px;height:60px" text-align="left" top="30px"></p></a></div>
+<br><br><br><br><br><br>
+<br>
+<br>
+<br>
+<center><div id="sentence"><font color=black face="verdana"><p>Welcome to Havi, <%= user.username %> ! Download the chrome extension to access your dashboard. <br><br> If you'd like to delete your payment details, click the button below.</p>  </font></div></center>
+<br>
 
+<center><form action="/deletedetails" method="POST" id="payment-form">
+    <button class="thebutton" type="submit">Delete payment details</button>
+  </form>
 
-
+	
+</center>
 
 
 
 <style>
 
-body {background-color:#ffffff}
-
-
-#textbox {
-	
-	width:200px;
-}
-
   .thebutton {	  
     margin-left:220px;
-	width:220px;
+	width:260px;
   
       overflow: visible;
       display: inline-block;
@@ -89,6 +89,3 @@ body {background-color:#ffffff}
   
   
   </style>
-  
-  
-  
