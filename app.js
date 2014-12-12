@@ -185,58 +185,58 @@ mongoose.connect(uristring, function (err, res) {
 // ));
 //
 
-
-var app = express()
-, https = require('https');
-
-
-var options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
-};
-
-
-//var server = https.createServer(app);
-var port = Number(process.env.PORT || 5000);
-var server = https.createServer(options, app, function(req, res) {
-	
-}).listen(port, function () {
-	console.log("Listening on " + port);
-});
-// configure Express
-app.configure(function() {
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
-  app.use(express.logger());
-  app.use(function (req, res, next) {
-
-      // Website you wish to allow to connect
-	  res.setHeader( "Access-Control-Allow-Origin", req.headers.origin );
-
-      // Request methods you wish to allow
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-      // Request headers you wish to allow
-      res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-      // Set to true if you need the website to include cookies in the requests sent
-      // to the API (e.g. in case you use sessions)
-      res.setHeader('Access-Control-Allow-Credentials', true);
-
-      // Pass to next layer of middleware
-      next();
-  });
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
-  // Initialize Passport!  Also use passport.session() middleware, to support
-  // persistent login sessions (recommended).
- // app.use(passport.initialize());
- // app.use(passport.session());
-  app.use(app.router);
-  app.use(express.static(__dirname + '/public'));
-});
+//
+// var app = express()
+// , https = require('https');
+//
+//
+// var options = {
+//   key: fs.readFileSync('key.pem'),
+//   cert: fs.readFileSync('cert.pem')
+// };
+//
+//
+// //var server = https.createServer(app);
+// var port = Number(process.env.PORT || 5000);
+// var server = https.createServer(options, app, function(req, res) {
+//
+// }).listen(port, function () {
+// 	console.log("Listening on " + port);
+// });
+// // configure Express
+// app.configure(function() {
+//   app.set('views', __dirname + '/views');
+//   app.set('view engine', 'ejs');
+//   app.use(express.logger());
+//   app.use(function (req, res, next) {
+//
+//       // Website you wish to allow to connect
+// 	  res.setHeader( "Access-Control-Allow-Origin", req.headers.origin );
+//
+//       // Request methods you wish to allow
+//       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//
+//       // Request headers you wish to allow
+//       res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+//
+//       // Set to true if you need the website to include cookies in the requests sent
+//       // to the API (e.g. in case you use sessions)
+//       res.setHeader('Access-Control-Allow-Credentials', true);
+//
+//       // Pass to next layer of middleware
+//       next();
+//   });
+//   app.use(express.cookieParser());
+//   app.use(express.bodyParser());
+//   app.use(express.methodOverride());
+//   app.use(express.session({ secret: 'keyboard cat' }));
+//   // Initialize Passport!  Also use passport.session() middleware, to support
+//   // persistent login sessions (recommended).
+//  // app.use(passport.initialize());
+//  // app.use(passport.session());
+//   app.use(app.router);
+//   app.use(express.static(__dirname + '/public'));
+// });
 //
 // app.get('/test', function(req, res){
 // 	console.log('called get');
