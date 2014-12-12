@@ -169,7 +169,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new GitHubStrategy({
     clientID: GITHUB_CLIENT_ID,
     clientSecret: GITHUB_CLIENT_SECRET,
-    callbackURL: "http://havi.co/auth/github/callback"
+    callbackURL: "https://havi.co/auth/github/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     // asynchronous verification, for effect...
@@ -264,7 +264,7 @@ app.configure(function() {
 //heroku
 app.get('*',function(req,res,next){
   if(req.headers['x-forwarded-proto']!='https')
-    res.redirect('http://havi.co'+req.url);
+    res.redirect('https://havi.co'+req.url);
   else
 	  next(); /* Continue to other routes if we're not redirecting */
 });
@@ -470,7 +470,7 @@ app.post('/claim', function(req, res) {
 								var scheduleID = uuid.v1();
 
 								//create email
-								var tempUrl = '"' + 'http://havi.co/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
+								var tempUrl = '"' + 'https://havi.co/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
 		   						var mailOptions = {
 		   						    from: 'Havi Bounty System <noreply@havi.co>', // sender address
 		   						    to: tempEmails, // list of receivers
