@@ -264,9 +264,9 @@ app.configure(function() {
 //heroku
 app.get('*',function(req,res,next){
   if(req.headers['x-forwarded-proto']!='https')
-    res.redirect('https://stormy-journey-3037.herokuapp.com'+req.url)
+    res.redirect('https://stormy-journey-3037.herokuapp.com'+req.url);
   else
-    next() /* Continue to other routes if we're not redirecting */
+	  next(); /* Continue to other routes if we're not redirecting */
 });
 
 
