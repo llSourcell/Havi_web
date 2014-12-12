@@ -221,8 +221,6 @@ var forceSsl = function (req, res, next) {
     }
     return next();
  };
- env = process.env.NODE_ENV || 'development';
-
 
 // configure Express
 app.configure(function() {
@@ -256,9 +254,8 @@ app.configure(function() {
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(app.router);
-  if (env === 'production') {
-          app.use(forceSsl);
-      }
+  //heroku
+  app.use(forceSsl);
   app.use(express.static(__dirname + '/public'));
 });
 
