@@ -28,7 +28,16 @@ function change() {
 	//but only if /auth/github is not going to github.com
 		
 	console.log('aghh');
-		
+	
+	
+	// Every two seconds....
+	setInterval(function() {
+		// Send the message "Hello" to the parent window
+		// ...if the domain is still "davidwalsh.name"
+		console.log('lol');
+		parent.postMessage("Hello",document.URL);
+	},2000);
+
 		//window.open('/auth/github');
 		// setInterval(function(){
 // 			console.log('location', window.location.href);

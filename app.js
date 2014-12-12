@@ -169,7 +169,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new GitHubStrategy({
     clientID: GITHUB_CLIENT_ID,
     clientSecret: GITHUB_CLIENT_SECRET,
-    callbackURL: "https://stormy-journey-3037.herokuapp.com/auth/github/callback"
+    callbackURL: "https://localhost:5000/auth/github/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     // asynchronous verification, for effect...
@@ -195,21 +195,33 @@ var options = {
   cert: fs.readFileSync('cert.pem')
 };
 
-app.set('port', (process.env.PORT || 5000));
+//heroku
+//app.set('port', (process.env.PORT || 5000));
 
 
 
 //var server = https.createServer(app);
-//var port = Number(process.env.PORT || 5000);
-// var server = https.createServer(options, app, function(req, res) {
-//
-// }).listen(port, function () {
-// 	console.log("Listening on " + port);
+var port = Number(process.env.PORT || 5000);
+var server = https.createServer(options, app, function(req, res) {
+
+}).listen(port, function () {
+	console.log("Listening on " + port);
+});
+//heroku
+// app.listen(app.get('port'), function() {
+//   console.log("Node app is running at localhost:" + app.get('port'));
 // });
 
-app.listen(app.get('port'), function() {
-  console.log("Node app is running at localhost:" + app.get('port'));
-});
+
+
+//heroku
+var forceSsl = function (req, res, next) {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect(['https://', req.get('Host'), req.url].join(''));
+    }
+    return next();
+ };
+ env = process.env.NODE_ENV || 'development';
 
 
 // configure Express
@@ -244,6 +256,9 @@ app.configure(function() {
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(app.router);
+  if (env === 'production') {
+          app.use(forceSsl);
+      }
   app.use(express.static(__dirname + '/public'));
 });
 
@@ -447,7 +462,7 @@ app.post('/claim', function(req, res) {
 								var scheduleID = uuid.v1();
 
 								//create email
-								var tempUrl = '"' + 'https://stormy-journey-3037.herokuapp.com/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
+								var tempUrl = '"' + 'https://localhost:5000/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
 		   						var mailOptions = {
 		   						    from: 'Havi Bounty System <noreply@havi.co>', // sender address
 		   						    to: tempEmails, // list of receivers
