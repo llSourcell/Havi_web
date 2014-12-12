@@ -297,8 +297,8 @@ app.get('/api/bounties', function(req,res) {
 
 
 app.get('/', function(req, res){
-  //res.render('index', { user: req.user});
-  response.send('ayy');
+  res.render('index', { user: req.user});
+  //response.send('ayy');
   
 });
 
