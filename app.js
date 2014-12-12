@@ -1,7 +1,7 @@
 
 //1 import libs
 var express = require('express')
-  , passport = require('passport')
+ // , passport = require('passport')
   , util = require('util')
  // , GitHubStrategy = require('passport-github').Strategy
 	, mongoose = require ("mongoose")
@@ -15,31 +15,31 @@ var express = require('express')
   //
   //
   //
-  
-  
-
-//2 set static vars
-var GITHUB_CLIENT_ID = "04db9cc90b1ada33138d"
-var GITHUB_CLIENT_SECRET = "4d2a41fbac1f27545afde5623c54ab8bc65bbecc";
-var STRIPE_ID = 'ca_58TO3wfFMfPQNQiWd2mali9gTqyCFyMj';
-var STRIPE_SECRET = 'sk_test_j1SBAToC0RaGv5tSdeyOplNc';
-
-
-//re-used vars
-var Schema = mongoose.Schema;
-var the_issue;
-var the_user;
-var bountyIDforreject;
-var scheduleIDforreject;
-var jobforReject;
-var return_to_payment_after_login = false;
-var return_to_claim_after_login = false;
-var return_to_reject_after_login = false;
-var return_to_delete_after_login = false;
-var return_to_download_after_login = false;
-var email_user;
-
-
+//
+//
+//
+// //2 set static vars
+// var GITHUB_CLIENT_ID = "04db9cc90b1ada33138d"
+// var GITHUB_CLIENT_SECRET = "4d2a41fbac1f27545afde5623c54ab8bc65bbecc";
+// var STRIPE_ID = 'ca_58TO3wfFMfPQNQiWd2mali9gTqyCFyMj';
+// var STRIPE_SECRET = 'sk_test_j1SBAToC0RaGv5tSdeyOplNc';
+//
+//
+// //re-used vars
+// var Schema = mongoose.Schema;
+// var the_issue;
+// var the_user;
+// var bountyIDforreject;
+// var scheduleIDforreject;
+// var jobforReject;
+// var return_to_payment_after_login = false;
+// var return_to_claim_after_login = false;
+// var return_to_reject_after_login = false;
+// var return_to_delete_after_login = false;
+// var return_to_download_after_login = false;
+// var email_user;
+//
+//
 
 
 //3 connect to DB 
@@ -232,8 +232,8 @@ app.configure(function() {
   app.use(express.session({ secret: 'keyboard cat' }));
   // Initialize Passport!  Also use passport.session() middleware, to support
   // persistent login sessions (recommended).
-  app.use(passport.initialize());
-  app.use(passport.session());
+ // app.use(passport.initialize());
+ // app.use(passport.session());
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
 });
