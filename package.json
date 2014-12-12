@@ -1,6 +1,7 @@
 {
   "name": "passport-github-examples-login",
   "version": "0.0.0",
+  "main": "app.js",
   "dependencies": {
     "cookie-parser": ">= 0.0.0",
     "ejs": ">= 0.0.0",
