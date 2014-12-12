@@ -10,7 +10,7 @@ var express = require('express')
   , url = require('url')
   , nodemailer = require('nodemailer')
   , uuid = require('node-uuid')
-  , Agenda = require("Agenda")
+  , Agenda = require("agenda")
   , timestamps = require('mongoose-timestamp');
 
 	
