@@ -55,20 +55,20 @@ mongoose.connect(uristring, function (err, res) {
   
   }
 });
-
-//create agenda
-var agenda = new Agenda({db: { address: uristring}});
-
-
-
-//setup email transporter
-var transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: 'sirajraval1@gmail.com',
-        pass: 'godfuck24'
-    }
-});
+//
+// //create agenda
+// var agenda = new Agenda({db: { address: uristring}});
+//
+//
+//
+// //setup email transporter
+// var transporter = nodemailer.createTransport({
+//     service: 'Gmail',
+//     auth: {
+//         user: 'sirajraval1@gmail.com',
+//         pass: 'godfuck24'
+//     }
+// });
 
 
 
