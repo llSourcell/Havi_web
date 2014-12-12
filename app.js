@@ -196,21 +196,21 @@ var options = {
 };
 
 //heroku
-//app.set('port', (process.env.PORT || 5000));
+app.set('port', (process.env.PORT || 5000));
 
 
 
 //var server = https.createServer(app);
-var port = Number(process.env.PORT || 5000);
-var server = https.createServer(options, app, function(req, res) {
-
-}).listen(port, function () {
-	console.log("Listening on " + port);
-});
-//heroku
-// app.listen(app.get('port'), function() {
-//   console.log("Node app is running at localhost:" + app.get('port'));
+// var port = Number(process.env.PORT || 5000);
+// var server = https.createServer(options, app, function(req, res) {
+//
+// }).listen(port, function () {
+// 	console.log("Listening on " + port);
 // });
+//heroku
+app.listen(app.get('port'), function() {
+  console.log("Node app is running at localhost:" + app.get('port'));
+});
 
 
 
