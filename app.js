@@ -56,9 +56,9 @@ var email_user;
 //   }
 // });
 
-//create agenda
-var agenda = new Agenda({db: { address: uristring}});
-
+// //create agenda
+// var agenda = new Agenda({db: { address: uristring}});
+//
 
 
 //setup email transporter
@@ -71,40 +71,40 @@ var transporter = nodemailer.createTransport({
 });
 
 
-
-//4 create schemas
-var userSchema = new Schema({
-    userID: String,
-    username: String,
-	displayname: String,
-	email: String, 
-	stripecustomerID: String,
-	striperecipientID: String
-});
-var bountySchema = new Schema({
-    amount: String,
-	owner: String,
-	repo: String,
-    issueID: String,
-    usersFunded: [],
-	usersClaimed: []
-});
-
-var historySchema = new Schema({
-	userID: String,
-	amount: String,
-	claimedorfunded: String,
-	issueLink: String,
-	time: Date	
-});
-
-userSchema.plugin(timestamps);
-bountySchema.plugin(timestamps);
-
-
-var PUser = mongoose.model('gitusers', userSchema);
-var PBounty = mongoose.model('bounties', bountySchema);
-var PHistory = mongoose.model('history', historySchema);
+//
+// //4 create schemas
+// var userSchema = new Schema({
+//     userID: String,
+//     username: String,
+// 	displayname: String,
+// 	email: String,
+// 	stripecustomerID: String,
+// 	striperecipientID: String
+// });
+// var bountySchema = new Schema({
+//     amount: String,
+// 	owner: String,
+// 	repo: String,
+//     issueID: String,
+//     usersFunded: [],
+// 	usersClaimed: []
+// });
+//
+// var historySchema = new Schema({
+// 	userID: String,
+// 	amount: String,
+// 	claimedorfunded: String,
+// 	issueLink: String,
+// 	time: Date
+// });
+//
+// userSchema.plugin(timestamps);
+// bountySchema.plugin(timestamps);
+//
+//
+// var PUser = mongoose.model('gitusers', userSchema);
+// var PBounty = mongoose.model('bounties', bountySchema);
+// var PHistory = mongoose.model('history', historySchema);
 
 
 
