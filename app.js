@@ -169,7 +169,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new GitHubStrategy({
     clientID: GITHUB_CLIENT_ID,
     clientSecret: GITHUB_CLIENT_SECRET,
-    callbackURL: "https://localhost:5000/auth/github/callback"
+    callbackURL: "https://stormy-journey-3037.herokuapp.com/auth/github/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     // asynchronous verification, for effect...
@@ -437,7 +437,7 @@ app.post('/claim', function(req, res) {
 								var scheduleID = uuid.v1();
 
 								//create email
-								var tempUrl = '"' + 'https://localhost:5000/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
+								var tempUrl = '"' + 'https://stormy-journey-3037.herokuapp.com/rejectbounty' + '?bountyID=' + result[0]._id + '&scheduleID=' + scheduleID + '"';
 		   						var mailOptions = {
 		   						    from: 'Havi Bounty System <noreply@havi.co>', // sender address
 		   						    to: tempEmails, // list of receivers
