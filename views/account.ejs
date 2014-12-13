@@ -100,7 +100,7 @@ function insertTable()
         tbody += "<tr>";
             tbody += "<td>";
             tbody += '<font face="verdana" size="2">' + 'You ' + test[i].claimedorfunded + ' an ' + '<a href=' + test[i].issueLink + ' target="top" id=issuelink' + '>issue</a>' + ' for ' + '$' + test[i].amount/100 + '</font>';
-			tbody += '<br><br>' + '<font color="#22a301" face="verdana" size="2">' + monthNames[parseInt(month)-1] + " " +dayth + ' ' + year + '</font>' ;
+			tbody += '<font color="#22a301" face="verdana" size="2">' + monthNames[parseInt(month)-1] + " " +dayth + ' ' + year + '</font>' + "<br><br>" ;
             tbody += "</td>";
         tbody += "</tr>";
 		}
