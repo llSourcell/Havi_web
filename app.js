@@ -1377,6 +1377,7 @@ app.get('/auth/github/callback',
 	        		    	  email: req.user.emails[0].value
 	        		   });
 	        		   newUser.save(function (err) {
+						   res.redirect('account');
 	        if (err) console.log ('Error on save!')});
 	     	    }
 			
