@@ -1355,7 +1355,7 @@ app.get('/auth/github/callback',
 		  else {
 			  
 			  //user not in DB
-			  
+			  console.log('fuckfuckfuckfuck', req.user.email);
 			  if(!req.user.email) {
 			  	
 				  console.log("user doesn't have an email on file github");
