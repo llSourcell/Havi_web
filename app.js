@@ -1357,24 +1357,24 @@ app.get('/auth/github/callback',
 			  //user not in DB
 		
 			  //if no email in github, input
-			  if(!req.user.emails[0]) {
+			  if(!req.user.emails[0].value) {
 			  	
 				  console.log("user doesn't have an email on file github");
 				  res.redirect('/inputemail');
 			  }
 			  
-			  console.log('the user data', req.user.emails[0]);
+			  console.log('the user data', req.user.emails[0].value);
 			  //create and save new user
 			  
 			  //if HAS email on github, use it and save
-			  if(req.user.emails[0]) {
+			  if(req.user.emails[0].value) {
 			  	
 			  
 	        		   var newUser = new PUser ({
 	        		         userID: req.user.id,
 	        		       username: req.user.username,
 	        		   	displayname: req.user.displayname,
-	        		    	  email: req.user.emails[0]
+	        		    	  email: req.user.emails[0].value
 	        		   });
 	        		   newUser.save(function (err) {
 	        if (err) console.log ('Error on save!')});
