@@ -1008,6 +1008,9 @@ else {
 app.post('/collectpaymentdata', function(req, res){
 	
 	console.log('the req', req.body.stripeToken);
+	console.log('the user1', req.user.id);
+	console.log('the user2', the_user.id);
+	
 	
   	var query = PUser.find({'userID': req.user.id});
 	     query.exec(function(err, result) {
