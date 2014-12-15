@@ -1021,7 +1021,7 @@ app.post('/collectpaymentdata', function(req, res){
 					   console.log('the err is', err);
 					   if(err)
 					   {
-						   res.send('Sorry your card was rejected: ' + err + ' Please close this window and try again.');
+						   res.send(err + ' Please close this window and try again.');
 						
 					   }
 					   else
@@ -1033,6 +1033,7 @@ app.post('/collectpaymentdata', function(req, res){
 		  			  result[0].save(function (err) {
 		   	  			if(err) {
 		   	          	  			console.log('ERROR', err);
+		 						   res.send(err + ' Please close this window and try again.');
 		   	   		 			}
 								else {
 									
