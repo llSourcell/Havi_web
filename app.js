@@ -6,7 +6,7 @@ var express = require('express')
   , GitHubStrategy = require('passport-github').Strategy
   , mongoose = require ("mongoose")
   , fs = require('fs')
-  , stripe = require("stripe")("sk_test_j1SBAToC0RaGv5tSdeyOplNc")
+  , stripe = require("stripe")("sk_live_1HXwrvBclRdIRhNVVx9GMA0R")
   , url = require('url')
   , nodemailer = require('nodemailer')
   , uuid = require('node-uuid')
@@ -22,7 +22,7 @@ var express = require('express')
 var GITHUB_CLIENT_ID = "04db9cc90b1ada33138d"
 var GITHUB_CLIENT_SECRET = "4d2a41fbac1f27545afde5623c54ab8bc65bbecc";
 var STRIPE_ID = 'ca_58TO3wfFMfPQNQiWd2mali9gTqyCFyMj';
-var STRIPE_SECRET = 'sk_test_j1SBAToC0RaGv5tSdeyOplNc';
+var STRIPE_SECRET = 'sk_live_1HXwrvBclRdIRhNVVx9GMA0R';
 
 
 //re-used vars
