@@ -1,3 +1,4 @@
+<header>
 <body>
 <div id="header">
 <div style="height:1px;font-size:1px;">&nbsp;</div>
@@ -15,10 +16,16 @@
 <br>
 <br>
 <br>
-<link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/itemID">
-
-   <center><link rel="chrome-webstore-item"
-    href="https://chrome.google.com/webstore/detail/llihpfpjcifemendciahlkeademhpobi"> <button class="thebutton" type="submit" onclick="change()" id="signin" value="LOL"><font family="verdana">Download Havi</font></button></link></center>
+   <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/llihpfpjcifemendciahlkeademhpobi">
+         <script>
+             function ExtInstall() {
+                 if (chrome.app.isInstalled) 
+                     alert("already installed!");
+                 else 
+                     chrome.webstore.install();
+             }
+         </script>
+   <center><a href="https://chrome.google.com/webstore/detail/havi/llihpfpjcifemendciahlkeademhpobi?utm_source=plus"> <button class="thebutton" type="submit" onclick="ExtInstall()" id="signin" value="LOL"><font family="verdana">Download Havi</font></button></a></center>
 <br>
 <br>
 <br>
@@ -29,6 +36,7 @@
 <br>
 </div>
 </body>
+</header>
 
 
 
