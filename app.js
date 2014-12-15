@@ -1008,7 +1008,6 @@ else {
 app.post('/collectpaymentdata', function(req, res){
 	
 	console.log('the req', req.body.stripeToken);
-	console.log('the user1', the_user.id);
 	console.log('the user1', req.user.id);
 	
 	
