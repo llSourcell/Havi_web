@@ -1379,7 +1379,7 @@ app.get('/auth/github/callback',
 	        // 		   });
 	        // 		   newUser.save(function (err) {
 	        // if (err) console.log ('Error on save!')});
-	        // 	     	    }
+	        	     	 }
 			
 				
 			}
