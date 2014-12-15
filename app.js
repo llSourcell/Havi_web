@@ -1356,6 +1356,12 @@ app.get('/auth/github/callback',
 			  
 			  //user not in DB
 			  
+			  if(!req.user.email) {
+			  	
+				  console.log("user doesn't have an email on file github");
+				  res.redirect('/inputemail');
+			  }
+			  
 			  console.log('the user data', req.user);
 			  //create and save new user
 			  
@@ -1372,12 +1378,7 @@ app.get('/auth/github/callback',
 	        		   newUser.save(function (err) {
 	        if (err) console.log ('Error on save!')});
 	     	    }
-				else {
-					
-					//the user has no email on github so redirect them to 
-				 res.redirect('/inputemail');
-				
-				}
+			
 				
 			}
 			
