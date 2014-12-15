@@ -1202,7 +1202,7 @@ app.post('/deletedetails', function(req, res) {
 			   newBounty.owner = owner;
 			   newBounty.repo = repo;
 			   newBounty.issueID = issue_id;
-			   newBounty.usersFunded.push(the_user.id);
+			   newBounty.usersFunded.push(req.user.id);
 			   
 			   //7 save it to the DB
 	   		   newBounty.save(function (err) {
@@ -1213,7 +1213,7 @@ app.post('/deletedetails', function(req, res) {
 	   
 		//add the fund to history
 	   var newHistory = new PHistory;
-	   newHistory.userID = the_user.id;
+	   newHistory.userID = req.user.id;
 	   newHistory.amount = charge.amount;
 	   newHistory.claimedorfunded = 'funded';
 	   newHistory.issueLink = 'https://github.com/' + owner + '/' + repo + '/' + 'issues/' + issue_id;
