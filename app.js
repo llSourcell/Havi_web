@@ -1019,22 +1019,32 @@ app.post('/collectpaymentdata', function(req, res){
 				   stripe.customers.create({ description: 'customer creation', email:req.user.email, card: req.body.stripeToken }, function(err, customer) { 
 					   console.log('the customer is', customer);
 					   console.log('the err is', err);
-					   
-					   
-				   				//have customer as well now, save it
-				   	 			result[0].stripecustomerID = customer.id;
+					   if(err)
+					   {
+						   res.send('Sorry your card was rejected: ' + err + ' Please close this window and try again.');
+						
+					   }
+					   else
+					   {
+		   				//have customer as well now, save it
+		   	 			result[0].stripecustomerID = customer.id;
 
-				   				//14 save it
-				  			  result[0].save(function (err) {
-				   	  			if(err) {
-				   	          	  			console.log('ERROR', err);
-				   	   		 			}
-										else {
-											
-											console.log('saved customer data');
-										  	res.render('payment', { user: req.user });
-										}
-				   				});
+		   				//14 save it
+		  			  result[0].save(function (err) {
+		   	  			if(err) {
+		   	          	  			console.log('ERROR', err);
+		   	   		 			}
+								else {
+									
+									console.log('saved customer data');
+								  	res.render('payment', { user: req.user });
+								}
+		   				});
+					   	
+					   }
+					   
+					   
+				   			
 					            
 				      });
 			
