@@ -340,6 +340,8 @@ app.get('/api/userID', function(req,res) {
 	  {
 		  console.log(err);
 	  }
+	  
+  });
   	
 });
 
