@@ -257,7 +257,6 @@ app.configure(function() {
   //heroku
   app.use(forceSsl);
   app.use(express.static(__dirname + '/public'));
-  
 });
 
 
