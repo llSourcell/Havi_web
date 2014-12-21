@@ -1,6 +1,8 @@
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
   <title>Stripe Getting Started Form</title>
+  <link href="/css/card.css" rel="stylesheet" type="text/css">
+  
  
   <!-- The required Stripe lib -->
   <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
@@ -27,8 +29,8 @@
         var token = response.id;
         // Insert the token into the form so it gets submitted to the server
         $form.append($('<input type="hidden" name="stripeToken" />').val(token));
-	    var input = document.getElementById("legalname").value;
-        $form.append($('<input type="hidden" name="legalName" />').val(input));
+	  	var the_name = $("#legalname").val();
+        $form.append($('<input type="hidden" name="legalName" />').val(the_name));
 
         // and re-submit
         $form.get(0).submit();
@@ -42,8 +44,19 @@
  
         // Disable the submit button to prevent repeated clicks
         $form.find('button').prop('disabled', true);
+		
+	  var expgroup = $("#date-exp").val();
+	  var expArray = expgroup.split( '/' );
+	  var expmm = ( expArray[ 0 ] );
+	  var expyy = ( expArray[ 1 ] );
+		
  
-        Stripe.card.createToken($form, stripeResponseHandler);
+        Stripe.card.createToken({
+                    number: $('#cc').val(),
+                    cvc: $('#card-cvc').val(),
+                    exp_month: expmm,
+                    exp_year: expyy
+                }, stripeResponseHandler);
  
         // Prevent the form from submitting with the default action
         return false;
@@ -55,94 +68,37 @@
   </script>
 </head>
 <body>  
-  <center>
-  <div class="form-row">
-    <label>
-      <span style="font-family : verdana;">Name on Card</span>
-	  <br>
-      <input type="text" style="font-size:14px" size="20" id="legalname" class="iz"/>
-    </label>
-  </div>
-</center>
-  
- <center>
-  <form action="/collectpaymentdata" method="POST" id="payment-form">
-    <span class="payment-errors"></span>
  
-    <div class="form-row">
-      <label>
-        <span style="font-family : verdana;">Card Number</span>
-		<br>
-        <input type="text" size="20" style="font-size:14px" data-stripe="number" class="iz" id="cc-number" maxlength="19"/>
-      </label>
-    </div>
- 
-    <div class="form-row">
-      <label>
-        <span style="font-family : verdana;">CVC</span>
-		<br>
-        <input type="text" size="4" style="font-size:14px" data-stripe="cvc" class="iz2" maxlength="4"/>
-      </label>
-    </div>
- 
-    <div class="form-row">
-      <label>
-        <span style="font-family : verdana;">Exp. (MM/YYYY)</span>
-		<br>
-        <input type="text" size="2" style="font-size:14px" data-stripe="exp-month" class="iz2" maxlength="2"/>
-      </label>
-      <span> / </span>
-      <input type="text" size="4" style="font-size:14px" data-stripe="exp-year" class="iz2" maxlength="4"/>
-    </div>
-   <br>
-    <button type="submit" class="thebutton">Submit Card Details</button>
-  </form>
-  <br>
-  <img src="http://i.imgur.com/Eg5ojLP.png" width="150" height="30">
-</center>
-</body>
 
-  <script type="text/javascript">
-  function space(el, after) {
-      after = after || 4;
-      var v = el.value.replace(/[^\dA-Z]/g, ''),
-          reg = new RegExp(".{" + after + "}","g")
-      el.value = v.replace(reg, function (a, b, c) {
-          return a + ' ';
-      });
-  }
-  
-  var el = document.getElementById('cc-number');
-  el.addEventListener('keyup', function () {
-      space(this, 4);
-  });
-  </script>
+
+        <div class="card-wrapper"></div>
+
+        <div class="form-container active">
+  		  	<form action="/collectpaymentdata" method="POST" id="payment-form">
+			    <span class="payment-errors"></span>
+                <input placeholder="Card number" type="text" name="number"  id="cc">
+                <input placeholder="Full name" type="text" name="name" id="legalname">
+                <input placeholder="MM/YY" type="text" name="expiry" id="date-exp">
+                <input placeholder="CVC" type="text" name="cvc" id="card-cvc">
+			    <button type="submit" class="thebutton">Submit Card Details</button>
+				
+            </form>
+        </div>
+    </div>
+	
+</body>
+	
+	
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="/js/card.js"></script>
+    <script>
+        $('.active form').card({
+            container: $('.card-wrapper')
+        })
+    </script>
 
 <style>
-.iz {
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	width:190px;
-	height:30px;
-	text-align:center;
-   
-}
-.iz2 {
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	width:50px;
-	height:30px;
-	text-align:center;
-   
-}
 
-
-.form-row {
-	
-	top: 0px;
-}
 
 .thebutton {	  
   margin-left:220px;
