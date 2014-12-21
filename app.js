@@ -318,6 +318,33 @@ app.get('/api/bounties', function(req,res) {
  });
 });
 
+ //API for github page to display all bounties
+app.get('/api/userID', function(req,res) {
+	 
+    var query = PUser.find({'userID': the_user.id });
+     query.exec(function(err, result) {
+      if (!err) {
+		  
+		  if(result[0].stripecustomerID != '')
+		  {
+		  	res.send({hasCard:'YES'});
+		  }
+		  else
+		  {
+  		  	res.send({hasCard:'NO'});
+		  	
+		  }
+		  
+	  }
+	  else
+	  {
+		  console.log(err);
+	  }
+  	
+});
+
+
+
 
 app.get('/', function(req, res){
   res.render('index', { user: req.user});
