@@ -605,7 +605,7 @@ app.post('/claim', function(req, res) {
 																
 															});
 															//schedule agenda
-															agenda.schedule('in 1 week', scheduleID);
+															agenda.schedule('in 604800 seconds', scheduleID);
 															//start agenda
 															agenda.start();
 														});		
