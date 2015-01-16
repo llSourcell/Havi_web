@@ -56,23 +56,23 @@ mongoose.connect(uristring, function (err, res) {
   }
 });
 
-//create agenda
+//create agenda (agenda is the library that schedules bounty claims)
 var agenda = new Agenda({db: { address: uristring}});
 
 
 
-//setup email transporter
+//setup email transporter (sends emails)
 var transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-        user: 'sirajraval1@gmail.com',
-        pass: 'godfuck24'
+        user: 'teamhavi@gmail.com',
+        pass: 'havi1234'
     }
 });
 
 
 
-//4 create schemas
+//4 create schemas in the DB, there are 3 schemas
 var userSchema = new Schema({
     userID: String,
     username: String,
@@ -98,10 +98,13 @@ var historySchema = new Schema({
 	time: Date	
 });
 
+
+//adds timestamps to the schemas.
 userSchema.plugin(timestamps);
 bountySchema.plugin(timestamps);
 
 
+//connects schemas to mongoose
 var PUser = mongoose.model('gitusers', userSchema);
 var PBounty = mongoose.model('bounties', bountySchema);
 var PHistory = mongoose.model('history', historySchema);
@@ -112,12 +115,10 @@ var PHistory = mongoose.model('history', historySchema);
 passport.serializeUser(function(user, done) {
   done(null, user);
   
-  console.log('passport came first');
   //user for account custome mail submit purposes
   email_user = user;
   //if no stripe data, just work with github
   if(user.stripe_user_id == null) {
-//  console.log('fuck', user.stripe_user_id);
   query = mongoose.model('gitusers', userSchema);
   
   //1 query the database for the user.ID
@@ -185,7 +186,7 @@ passport.use(new GitHubStrategy({
 ));
 
 
-
+//This stuff is for SSL and heroku 
 var app = express()
 , https = require('https');
 
@@ -195,10 +196,10 @@ var options = {
   cert: fs.readFileSync('cert.pem')
 };
 
-//heroku
 app.set('port', (process.env.PORT || 5000));
 
 
+//uncomment this and comment the heroku stuff if you want to run locally. 
 
 //var server = https.createServer(app);
 // var port = Number(process.env.PORT || 5000);
@@ -214,7 +215,7 @@ app.listen(app.get('port'), function() {
 
 
 
-//heroku
+//heroku ssl
 var forceSsl = function (req, res, next) {
     if (req.headers['x-forwarded-proto'] !== 'https') {
         return res.redirect(['https://', req.get('Host'), req.url].join(''));
@@ -269,7 +270,7 @@ app.get('*',function(req,res,next){
 	  next(); /* Continue to other routes if we're not redirecting */
 });
 
-
+//just testing api 
 app.get('/test', function(req, res){
 	console.log('called get');
 	console.log('the req',req);
@@ -347,13 +348,14 @@ app.get('/api/userID', function(req,res) {
 
 
 
-
+//main page
 app.get('/', function(req, res){
   res.render('index', { user: req.user});
   //response.send('ayy');
   
 });
 
+//shows account history
 app.get('/account', ensureAuthenticated, function(req, res){
 	
 	console.log('the user', req.user.id);
@@ -370,11 +372,13 @@ app.get('/account', ensureAuthenticated, function(req, res){
 	
 });
 
+//input the user email if their github doesn't have one
 app.get('/inputemail', function(req, res){
   res.render('inputemail', { isValid: true});
   
 });
 
+//submit the email they enter
 app.post('/inputemail', function(req, res){
   
   //get email inputted
@@ -416,12 +420,15 @@ else {
   
 });
 
+
+//validate the email
 function validateEmail(email) { 
     var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(email);
 }
 
 
+//login for users
 app.get('/login', function(req, res){
 	
 	  console.log('at login');
@@ -439,7 +446,6 @@ if (req.user) {
 	
 }
 else {
-	  console.log('hahaha3');
 	  console.log('req.user', the_user);
     res.render('login', { user: req.user });
 	
@@ -448,9 +454,10 @@ else {
 
 });
 
+//when a user attempts to claim a bounty
 app.post('/claim', function(req, res) {
 	
-	
+	//get his inputted data
 	var token_id = req.body.stripeToken;
 	var legal_name = req.body.legalName;
 	
@@ -757,7 +764,6 @@ app.post('/rejectbounty', function(req, res){
 	        console.log(error);
 	    }else{
 	        console.log('Message sent: ' + info.response);
-			// //TODO delete user in bounty's userclaimed array
 // 	   	 	 var split = the_issue.split('/');
 // 	   	 	 var owner = split[1];
 // 	   	 	 var repo = split[2];
@@ -784,6 +790,7 @@ app.post('/rejectbounty', function(req, res){
 	
 });
 
+//if the user goes to the reject bounty link in their email, this is called
 app.get('/rejectbounty', function(req, res){
 	//if the user has logged in, just show the payment page 
 	if (req.user) {
@@ -803,6 +810,7 @@ app.get('/rejectbounty', function(req, res){
     
 });
 
+//when a user clicks claim bounty
 app.get('/collectclaimdata', function(req, res){
    console.log('1');
 	
@@ -990,6 +998,8 @@ app.get('/payment', function(req, res){
 
 });
 
+
+//when a user clicks add bounty and no payment data on file
 app.get('/collectpaymentdata', function(req, res){
 	if (req.user) {
 		
@@ -1087,6 +1097,7 @@ app.post('/collectpaymentdata', function(req, res){
 });
 
 
+//if user wants to delete payment details - deletes all at once
 app.get('/deletedetails', function(req, res) {
 	
 	if (req.user) {
@@ -1438,7 +1449,7 @@ app.get('/auth/github/callback',
 		 
 		 
 		 
-		
+		//this logic is basically to ensure that if a user has logged in, to show the correct view. it uses global booleans to ensure this.
 
 	 
 	  
