@@ -19,10 +19,10 @@ var express = require('express')
   
 
 //2 set static vars
-var GITHUB_CLIENT_ID = "04db9cc90b1ada33138d"
-var GITHUB_CLIENT_SECRET = "4d2a41fbac1f27545afde5623c54ab8bc65bbecc";
-var STRIPE_ID = 'ca_58TO3wfFMfPQNQiWd2mali9gTqyCFyMj';
-var STRIPE_SECRET = 'sk_live_1HXwrvBclRdIRhNVVx9GMA0R';
+var GITHUB_CLIENT_ID = "XXXXX"
+var GITHUB_CLIENT_SECRET = "XXXX";
+var STRIPE_ID = 'XXXX';
+var STRIPE_SECRET = 'XXXX';
 
 
 //re-used vars
